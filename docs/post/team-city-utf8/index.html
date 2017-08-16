@@ -85,7 +85,17 @@
 }(document, 'script', 'facebook-jssdk'));</script>
 
 <article>
-    <p>As part of a continuous integration pipeline I&rsquo;m running my Postman api tests after every deployment to our development environment via TeamCity and Newman. One issue that I encountered was that the TeamCity agent build log wasn&rsquo;t showing formatted newman output correctly because by default it doesn&rsquo;t show UTF8. In order to fix this you just have to update your <code>C:\TeamCity\buildAgent\conf\buildAgent.properties</code> file to include <code>teamcity.runner.commandline.stdstreams.encoding=UTF-8</code> and then restart the TeamCity Agent service. The next time newman runs, you&rsquo;ll be able to decipher your build log.</p>
+    <p>As part of a continuous integration pipeline I&rsquo;m running my Postman api tests after every deployment to our development environment via TeamCity and Newman. One issue that I encountered was that the TeamCity agent build log wasn&rsquo;t showing formatted newman output correctly because by default it doesn&rsquo;t show UTF8. In order to fix this you just have to update your</p>
+
+<pre><code>C:\TeamCity\buildAgent\conf\buildAgent.properties
+</code></pre>
+
+<p>file to include</p>
+
+<pre><code>teamcity.runner.commandline.stdstreams.encoding=UTF-8
+</code></pre>
+
+<p>and then restart the TeamCity Agent service. The next time newman runs, you&rsquo;ll be able to decipher your build log.</p>
 
 </article>
 
