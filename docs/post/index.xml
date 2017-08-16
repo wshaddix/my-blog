@@ -2,21 +2,21 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Posts on Wes Shaddix</title>
-    <link>http://www.wshaddix.com/post/</link>
+    <link>http://www.wesshaddix.com/post/</link>
     <description>Recent content in Posts on Wes Shaddix</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Tue, 15 Aug 2017 21:43:19 -0400</lastBuildDate>
     
-	<atom:link href="http://www.wshaddix.com/post/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="http://www.wesshaddix.com/post/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>My First Post</title>
-      <link>http://www.wshaddix.com/post/my-first-post/</link>
+      <link>http://www.wesshaddix.com/post/my-first-post/</link>
       <pubDate>Tue, 15 Aug 2017 21:43:19 -0400</pubDate>
       
-      <guid>http://www.wshaddix.com/post/my-first-post/</guid>
+      <guid>http://www.wesshaddix.com/post/my-first-post/</guid>
       <description> Overview This is a test page with some content
 var x = new DateTime();  </description>
     </item>
