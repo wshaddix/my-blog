@@ -1,0 +1,6 @@
+baseURL = "http://wshaddix.com"
+languageCode = "en-us"
+title = "Wes Shaddix"
+theme = "blackburn"
+PygmentsCodeFences = true
+publishDir = "docs"
