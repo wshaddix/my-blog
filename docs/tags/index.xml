@@ -10,5 +10,14 @@
 	<atom:link href="http://www.wesshaddix.com/tags/index.xml" rel="self" type="application/rss+xml" />
     
     
+    <item>
+      <title>Teamcity</title>
+      <link>http://www.wesshaddix.com/tags/teamcity/</link>
+      <pubDate>Tue, 15 Aug 2017 21:43:19 -0400</pubDate>
+      
+      <guid>http://www.wesshaddix.com/tags/teamcity/</guid>
+      <description></description>
+    </item>
+    
   </channel>
 </rss>
