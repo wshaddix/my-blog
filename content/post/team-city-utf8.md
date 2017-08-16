@@ -20,5 +20,3 @@ file to include
 teamcity.runner.commandline.stdstreams.encoding=UTF-8
 ``` 
 and then restart the TeamCity Agent service. The next time newman runs, you'll be able to decipher your build log.
-
-![](test.png)
