@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Wes Shaddix</title>
-    <link>http://www.wshaddix.com/</link>
-    <description>Recent content on Wes Shaddix</description>
+    <title>Abouts on Wes Shaddix</title>
+    <link>http://www.wshaddix.com/about/</link>
+    <description>Recent content in Abouts on Wes Shaddix</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>&amp;copy; 2017. All rights reserved.</copyright>
     <lastBuildDate>Tue, 15 Aug 2017 22:25:08 -0400</lastBuildDate>
     
-	<atom:link href="http://www.wshaddix.com/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="http://www.wshaddix.com/about/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
@@ -19,16 +19,6 @@
       
       <guid>http://www.wshaddix.com/about/</guid>
       <description>About Me Hello</description>
-    </item>
-    
-    <item>
-      <title>My First Post</title>
-      <link>http://www.wshaddix.com/post/my-first-post/</link>
-      <pubDate>Tue, 15 Aug 2017 21:43:19 -0400</pubDate>
-      
-      <guid>http://www.wshaddix.com/post/my-first-post/</guid>
-      <description> Overview This is a test page with some content
-var x = new DateTime();  </description>
     </item>
     
   </channel>
