@@ -13,3 +13,8 @@
 html {
     font-size: 17px;
 }
+
+pre {
+    background-color: inherit;
+    padding: 1rem;
+}

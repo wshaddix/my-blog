@@ -22,6 +22,7 @@
  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Sans:400,400italic,700|Abril+Fatface">
  <link href="https://fonts.googleapis.com/css?family=Ubuntu|Ubuntu+Mono" rel="stylesheet">
  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+ <link rel="stylesheet" href="https://raw.githubusercontent.com/richleland/pygments-css/master/vim.css">
  <link rel="stylesheet" href="/custom.css">
  
   
@@ -87,12 +88,7 @@
     <br/>
     <a class="label" href="http://www.wesshaddix.com/categories/teamcity">TeamCity</a><a class="label" href="http://www.wesshaddix.com/categories/continuous-integration">Continuous Integration</a>
     </span>
-    <p>As part of a continuous integration pipeline I&rsquo;m running my Postman api tests after every deployment to our development environment via TeamCity and Newman. One issue that I encountered was that the TeamCity agent build log wasn&rsquo;t showing formatted newman output correctly because by default it doesn&rsquo;t show UTF8. In order to fix this you just have to update your</p>
-
-<pre><code>C:\TeamCity\buildAgent\conf\buildAgent.properties
-</code></pre>
-
-<p>file to include</p>
+    <p>As part of a continuous integration pipeline I&rsquo;m running my Postman api tests after every deployment to our development environment via TeamCity and Newman. One issue that I encountered was that the TeamCity agent build log wasn&rsquo;t showing formatted newman output correctly because by default it doesn&rsquo;t show UTF8. In order to fix this you just have to update your <code>C:\TeamCity\buildAgent\conf\buildAgent.properties</code> file to include</p>
 
 <pre><code>teamcity.runner.commandline.stdstreams.encoding=UTF-8
 </code></pre>
