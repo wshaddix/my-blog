@@ -9,6 +9,7 @@ categories: [
     "TeamCity",
     "Continuous Integration",
 ]
+description: "Blog about how to enable UTF-8 encoding in TeamCity 10 build logs"
 ---
 
 As part of a continuous integration pipeline I'm running my Postman api tests after every deployment to our development environment via TeamCity and Newman. One issue that I encountered was that the TeamCity agent build log wasn't showing formatted newman output correctly because by default it doesn't show UTF8. In order to fix this you just have to update your 
