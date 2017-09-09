@@ -1,20 +1,19 @@
 .theme-base-0c .sidebar {
-    background-color: #2d303b;
-}   
-.theme-base-0c .content a, .theme-base-0c .related-posts li a:hover
-{
-    color: #2d303b;
+  background-color: black;
 }
-.sidebar-about h1
-{
-    font-family: 'Ubuntu', sans-serif;
+.theme-base-0c .content a,
+.theme-base-0c .related-posts li a:hover {
+  color: #2d303b;
+}
+.sidebar-about h1 {
+  font-family: 'Ubuntu', sans-serif;
 }
 
 html {
-    font-size: 17px;
+  font-size: 17px;
 }
 
 pre {
-    background-color: inherit;
-    padding: 1rem;
+  background-color: inherit;
+  padding: 1rem;
 }

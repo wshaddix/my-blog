@@ -9,7 +9,6 @@ disqusShortname = "wesshaddix"
 [author]
     name = "Wes Shaddix"
 
-
 [permalinks]
     # Optional. Change the permalink format for the 'post' content type.
     # The format shown here is the same one Jekyll/Octopress uses by default.
