@@ -6,7 +6,7 @@
   
   <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
 
-  <title>Showing UTF8 Characters in TeamCity 10 Build Logs &middot; Wes Shaddix</title>
+  <title>MVP Startup Checklist &middot; Wes Shaddix</title>
 
   
   <link rel="apple-touch-icon-precomposed" sizes="144x144" href="http://www.wesshaddix.com/touch-icon-144-precomposed.png">
@@ -30,7 +30,7 @@
   
   
 
-  <meta name="description" content="Blog about how to enable UTF-8 encoding in TeamCity 10 build logs">
+  <meta name="description" content="My startup checklist">
   <meta name="keywords" content="">
   
   <script>
@@ -76,18 +76,37 @@
 
 <div class="content container">
   <div class="post">
-    <h1 class="post-title">Showing UTF8 Characters in TeamCity 10 Build Logs</h1>
-    <span class="post-date">Aug 15, 2017 &middot; 1 minute read &middot; <a href="http://www.wesshaddix.com/blog/2017/08/15/showing-utf8-characters-in-teamcity-10-build-logs/#disqus_thread">Comments</a>
+    <h1 class="post-title">MVP Startup Checklist</h1>
+    <span class="post-date">Oct 24, 2017 &middot; 2 minute read &middot; <a href="http://www.wesshaddix.com/blog/2017/10/24/mvp-startup-checklist/#disqus_thread">Comments</a>
     
     <br/>
-    <a class="label" href="http://www.wesshaddix.com/categories/teamcity">TeamCity</a><a class="label" href="http://www.wesshaddix.com/categories/continuous-integration">Continuous Integration</a>
+    <a class="label" href="http://www.wesshaddix.com/categories/startup">Startup</a><a class="label" href="http://www.wesshaddix.com/categories/mvp">MVP</a>
     </span>
-    <p>As part of a continuous integration pipeline I&rsquo;m running my Postman api tests after every deployment to our development environment via TeamCity and Newman. One issue that I encountered was that the TeamCity agent build log wasn&rsquo;t showing formatted newman output correctly because by default it doesn&rsquo;t show UTF8. In order to fix this you just have to update your <code>C:\TeamCity\buildAgent\conf\buildAgent.properties</code> file to include</p>
+    
 
-<pre><code>teamcity.runner.commandline.stdstreams.encoding=UTF-8
-</code></pre>
+<p>This is the beginning of a series on trying to build a viable (profitable) startup from a side project that I have been wanting to do for a while.</p>
 
-<p>and then restart the TeamCity Agent service. The next time newman runs, you&rsquo;ll be able to decipher your build log.</p>
+<p>This post will serve as the initial brain dump and will ultimately be a table of contents for future blog posts on each step that I go through in order to serve as a guide for others that want to learn from my many mistakes that I&rsquo;m sure I will make. Also, at any point of failure I hope to learn from my mistakes and try again and in doing so I will also update the blog series with the failure, cause and resolution to hopefully prevent that same mistake in the future.</p>
+
+<p>This is very much a work in progress and will change frequently until I figure out what exactly I need to do and in what order :). Use at your own risk!</p>
+
+<h1 id="initial-checklist">Initial Checklist</h1>
+
+<p>[ ] Use An Expense Tracker<br />
+[ ] Create a Financial Model<br />
+[ ] Register Domain Name<br />
+[ ] Setup Email Service<br />
+[ ] Register for the Microsoft BizSpark Program<br />
+[ ] Setup VSTS Account<br />
+[ ] Setup VSTS Project (Scrum)<br />
+[ ] Create Initial MVP Web Application<br />
+[ ] Get Initial Continuous Integration Pipeline Working (Build/Test/Package)<br />
+[ ] Get Initial Continuous Deployment Pipeline Working (Red/Green/No Downtime)<br />
+[ ] Configure DNS for the MVP<br />
+[ ] Purchase Web Application Template<br />
+[ ] Define MVP Specifications<br />
+[ ] Convert Specs to Backlog Items<br />
+[ ] Consider Applying to Stripe Atlas Program</p>
 
   </div>
   <div id="disqus_thread"></div>
