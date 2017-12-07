@@ -1,5 +1,5 @@
 ---
-title: "Docker Swarm with Ubuntu Zesty 17.04 on Azure"
+title: "Three Node Docker Swarm with Ubuntu Zesty 17.04 on Azure"
 author: "Wes Shaddix"
 tags: ["docker", "docker-swarm"]
 date: 2017-12-06T17:31:03-05:00
