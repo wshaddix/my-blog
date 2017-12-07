@@ -13,13 +13,13 @@
     
     
     <item>
-      <title>Docker Swarm on Azure</title>
-      <link>http://www.wesshaddix.com/post/docker-swarm/</link>
+      <title>Three Node Docker Swarm with Ubuntu Zesty 17.04 on Azure</title>
+      <link>http://www.wesshaddix.com/post/three-node-docker-swarm-cluster/</link>
       <pubDate>Wed, 06 Dec 2017 17:31:03 -0500</pubDate>
       
-      <guid>http://www.wesshaddix.com/post/docker-swarm/</guid>
+      <guid>http://www.wesshaddix.com/post/three-node-docker-swarm-cluster/</guid>
       <description>I&amp;rsquo;m learning docker swarm mode and need a realistic simulation of setting up a multi-node cluster. Azure is an ideal platform to test things out. My goal is to create a docker swarm cluster within a single region. Creating a multi-region swarm cluster requires creating virutal networks in different regions and connecting those vnets through a vpn gateway which is not something I&amp;rsquo;m ready to tackle just yet.
-My Setup I&amp;rsquo;m running a windows 10 workstation with docker for windows.</description>
+My setup I&amp;rsquo;m running a windows 10 workstation with docker for windows.</description>
     </item>
     
   </channel>
