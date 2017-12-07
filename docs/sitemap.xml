@@ -3,12 +3,12 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
-    <loc>http://www.wesshaddix.com/blog/2017/10/24/mvp-startup-checklist/</loc>
-    <lastmod>2017-10-24T11:01:19-04:00</lastmod>
+    <loc>http://www.wesshaddix.com/post/docker-swarm/</loc>
+    <lastmod>2017-12-06T17:31:03-05:00</lastmod>
   </url>
   
   <url>
-    <loc>http://www.wesshaddix.com/blog/2017/08/15/showing-utf8-characters-in-teamcity-10-build-logs/</loc>
+    <loc>http://www.wesshaddix.com/post/team-city-utf-8/</loc>
     <lastmod>2017-08-15T21:43:19-04:00</lastmod>
   </url>
   
@@ -24,20 +24,32 @@
   </url>
   
   <url>
-    <loc>http://www.wesshaddix.com/categories/mvp/</loc>
-    <lastmod>2017-10-24T11:01:19-04:00</lastmod>
+    <loc>http://www.wesshaddix.com/tags/docker/</loc>
+    <lastmod>2017-12-06T17:31:03-05:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>http://www.wesshaddix.com/tags/docker-swarm/</loc>
+    <lastmod>2017-12-06T17:31:03-05:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
     <loc>http://www.wesshaddix.com/post/</loc>
-    <lastmod>2017-10-24T11:01:19-04:00</lastmod>
+    <lastmod>2017-12-06T17:31:03-05:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>http://www.wesshaddix.com/categories/startup/</loc>
-    <lastmod>2017-10-24T11:01:19-04:00</lastmod>
+    <loc>http://www.wesshaddix.com/tags/</loc>
+    <lastmod>2017-12-06T17:31:03-05:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>http://www.wesshaddix.com/tags/teamcity/</loc>
+    <lastmod>2017-08-15T21:43:19-04:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -49,7 +61,7 @@
   
   <url>
     <loc>http://www.wesshaddix.com/</loc>
-    <lastmod>2017-10-24T11:01:19-04:00</lastmod>
+    <lastmod>2017-12-06T17:31:03-05:00</lastmod>
     <priority>0</priority>
   </url>
   

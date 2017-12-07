@@ -6,9 +6,7 @@
 
   
   <title>
-  Category → teamcity
-  
-   | Wes Shaddix Blog
+  Tags | Wes Shaddix Blog
 </title>
 
   
@@ -35,7 +33,7 @@
 <meta name="generator" content="Hugo 0.31.1" />
 
 
-<link rel="canonical" href="http://www.wesshaddix.com/categories/teamcity/" />
+<link rel="canonical" href="http://www.wesshaddix.com/tags/" />
 <link rel="alternative" href="http://www.wesshaddix.com/index.xml" title="Wes Shaddix" type="application/atom+xml" />
 
 
@@ -134,6 +132,8 @@
       
         <li class="menu-item
             
+              is-active
+            
             
             ">
             <a href="http://www.wesshaddix.com/tags/">Tags</a>
@@ -203,29 +203,23 @@
   </nav>
 </header>
 
-  <section class="main post-list">
-    <header class="list-header offscreen">
-      <h2 class="list-label">Posts List</h2>
+  <section class="main post-detail terms-list">
+    <header class="post-header">
+      <h1 class="post-title">Tags</h1>
     </header>
-    
-    
+    <div class="tags-cloud">
       
-        <article class="post-entry">
-  <header class="post-header">
-    <h3 class="post-title"><a href="http://www.wesshaddix.com/post/team-city-utf-8/" class="post-link">Showing UTF8 Characters in TeamCity 10 Build Logs</a></h3>
-    <p class="post-meta">@Wes Shaddix · Aug 15, 2017 · 1 min read</p>
-  </header>
-  
-  <p class="post-summary">As part of a continuous integration pipeline I’m running my Postman api tests after every deployment to our development environment via TeamCity and Newman. One issue that I encountered was that the TeamCity agent build log wasn’t showing formatted newman output correctly because by default it doesn’t show UTF8. In order to fix this you just have to update your C:\TeamCity\buildAgent\conf\buildAgent.properties file to include
-teamcity.runner.commandline.stdstreams.encoding=UTF-8 and then restart the TeamCity Agent service.</p>
-  <footer class="post-footer">
-    <a class="read-more" href="http://www.wesshaddix.com/post/team-city-utf-8/">Read More →</a>
-  </footer>
-</article>
-
       
-    
-    
+        
+        <a href="http://www.wesshaddix.com/tags/docker/" class="tag-s">docker</a>
+      
+        
+        <a href="http://www.wesshaddix.com/tags/docker-swarm/" class="tag-s">docker-swarm</a>
+      
+        
+        <a href="http://www.wesshaddix.com/tags/teamcity/" class="tag-s">teamcity</a>
+      
+    </div>
   </section>
   <footer class="site-footer">
   <p>© 2017 Wes Shaddix</p>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Tags on Wes Shaddix</title>
+    <link>http://www.wesshaddix.com/tags/</link>
+    <description>Recent content in Tags on Wes Shaddix</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <copyright>© This post is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License. Please give a reference to this source if you would like to quote or reproduce.</copyright>
+    <lastBuildDate>Wed, 06 Dec 2017 17:31:03 -0500</lastBuildDate>
+    
+	<atom:link href="http://www.wesshaddix.com/tags/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Docker</title>
+      <link>http://www.wesshaddix.com/tags/docker/</link>
+      <pubDate>Wed, 06 Dec 2017 17:31:03 -0500</pubDate>
+      
+      <guid>http://www.wesshaddix.com/tags/docker/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Docker Swarm</title>
+      <link>http://www.wesshaddix.com/tags/docker-swarm/</link>
+      <pubDate>Wed, 06 Dec 2017 17:31:03 -0500</pubDate>
+      
+      <guid>http://www.wesshaddix.com/tags/docker-swarm/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Teamcity</title>
+      <link>http://www.wesshaddix.com/tags/teamcity/</link>
+      <pubDate>Tue, 15 Aug 2017 21:43:19 -0400</pubDate>
+      
+      <guid>http://www.wesshaddix.com/tags/teamcity/</guid>
+      <description></description>
+    </item>
+    
+  </channel>
+</rss>

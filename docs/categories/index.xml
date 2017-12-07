@@ -5,7 +5,8 @@
     <link>http://www.wesshaddix.com/categories/</link>
     <description>Recent content in Categories on Wes Shaddix</description>
     <generator>Hugo -- gohugo.io</generator>
-    <language>en-us</language>
+    <language>en</language>
+    <copyright>© This post is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License. Please give a reference to this source if you would like to quote or reproduce.</copyright>
     
 	<atom:link href="http://www.wesshaddix.com/categories/index.xml" rel="self" type="application/rss+xml" />
     
@@ -16,24 +17,6 @@
       <pubDate>Tue, 15 Aug 2017 21:43:19 -0400</pubDate>
       
       <guid>http://www.wesshaddix.com/categories/continuous-integration/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>Mvp</title>
-      <link>http://www.wesshaddix.com/categories/mvp/</link>
-      <pubDate>Tue, 24 Oct 2017 11:01:19 -0400</pubDate>
-      
-      <guid>http://www.wesshaddix.com/categories/mvp/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>Startup</title>
-      <link>http://www.wesshaddix.com/categories/startup/</link>
-      <pubDate>Tue, 24 Oct 2017 11:01:19 -0400</pubDate>
-      
-      <guid>http://www.wesshaddix.com/categories/startup/</guid>
       <description></description>
     </item>
     

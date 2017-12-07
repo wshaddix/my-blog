@@ -1,74 +1,101 @@
 baseURL = "http://www.wesshaddix.com"
-languageCode = "en-us"
+languageCode = "en"
 title = "Wes Shaddix"
+theme = "hugo-nuo"
+enableRobotsTXT = true
 PygmentsCodeFences = true
+canonifyurls = true
+MetaDataFormat = "yaml"
 publishDir = "docs"
-theme = "hyde-x"
+
+# Disqus Username
 disqusShortname = "wesshaddix"
 
-[author]
-    name = "Wes Shaddix"
+# Google Analytics UA number
+googleAnalytics = "UA-XXXXXXXX-X"
 
-[permalinks]
-    # Optional. Change the permalink format for the 'post' content type.
-    # The format shown here is the same one Jekyll/Octopress uses by default.
-    post = "/blog/:year/:month/:day/:title/"
+# Copyright of your post
+copyright = "© This post is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License. Please give a reference to this source if you would like to quote or reproduce."
 
-[taxonomies]
-    # Optional. Use if you want tags and lists.
-    category = "categories"
+# Initial site menu, you can extend menu with content.
+[[menu.main]]
+  name = "My Blog"
+  weight = 10
+  identifier = "home"
+  url = "/"
 
-#
-# All parameters below here are optional and can be mixed and matched.
-#
+[[menu.main]]
+  name = "My Projects"
+  weight = 20
+  identifier = "works"
+  url = "https://github.com/wshaddix"
+
+[[menu.main]]
+  name = "Tags"
+  weight = 30
+  identifier = "tags"
+  url = "/tags/"
+
+# Add your own params here
 [params]
-    # If false display full article contents in blog index.
-    # Otherwise show description and 'read on' link to individual blog post page.
-    # Default (if omitted) is true.
-    truncate = true
+  author = "Wes Shaddix"
+  avatar = "/img/avatar.jpg"
+  seotitle = "Wes Shaddix Blog"
+  subtitle = ""
+  description = ""
+  paginate = 10
 
-    # Used when a given page doesn't set its own.
-    # defaultDescription = "Your default page description"
-    # defaultKeywords = "your,default,page,keywords"
+  # Choose your social networks
+  email = "wes.shaddix@outlook.com"
+  github = "wshaddix"
+  twitter = "wshaddix"
+  # linkedin = "linkedin_username"
+  # weibo = "weibo_username"
+  # wechat= "/img/qrcode.jpg" # Replace with your wechat qrcode image
+  # facebook = "facebook_username"
+  # google = "googlplus_id_number"
+  # instagram = "instagram_username"
+  # youtube = "youtube_username"
+  # vimeo = "vimeo_username"
+  # medium = "medium_username"
+  # quora = "quora_username"
+  # pinterest = "pinterest_username"
+  # dribbble = "dribbble_username"
+  # behance = "behance_username"
+  # jsfiddle = "jsfiddle_username"
+  # codepen = "codepen_username"
+  # zhihu = "zhihu_username"
+  # douban = "douban_username"
+  # bilibili = "bilibili_id_number"
 
-    # Hide estimated reading time for posts.
-    # Default (if omitted) is false.
-    hideReadingTime = false
+  # Changyan Comments (China Only)
+  # changyan = false
+  # changyanId = "cyt3toRiB"
+  # changyanConf = "prod_0908b1cb9a581501753cce1ed074dbe3"
 
-    # Changes sidebar background and link/accent colours.
-    # See below for more colour options.
-    # This also works: "theme-base-08 layout-reverse", or just "layout-reverse".
-    theme = "theme-base-0c"
+  # Google Webmaster
+  # https://www.google.com/webmasters/
+  # googleSiteVerification = "_moDmnnBNVLBN1rzNxyGUGdPHE20YgbmrtzLIbxaWFc"
 
-    # Select a syntax highight.
-    # Check the static/css/highlight directory for options.
-    # highlight = "sunburst"
+  # Bing Webmaster
+  # https://www.bing.com/toolbox/webmaster/
+  # msValidate = "22596E34341DD1D17D6022C44647E587"
 
-    # Optional additional custom CSS file URL, will override other styles.
-    customCSS = "/custom.css"
+  # Baidu Webmaster (China Only)
+  # https://zhanzhang.baidu.com/
+  # baiduSiteVerification = "MZ23SPxxfa"
 
-    # Displays under the author name in the sidebar, keep it short.
-    # You can use markdown here.
-    tagline = "Random Thoughts."
+  # Sogou Webmaster (China Only)
+  # http://zhanzhang.sogou.com/
+  # sogouSiteVerification = "m2jktMQTZm"
 
-    # Text for the top menu link, which goes the root URL for the site.
-    # Default (if omitted) is "Blog".
-    home = "Blog"
+  # 360 Webmaster (China Only)
+  # http://zhanzhang.so.com/
+  # soSiteVerification = "b7ab3b4c2edbc856642004d1b8c27a91"
 
-    # Metadata used to drive integrations.
-    googleAnalytics = "Your Google Analytics tracking code"
-    gravatarHash = "MD5 hash of your Gravatar email address"
+  # Baidu Tongji (China Only)
+  # https://tongji.baidu.com/
+  # baiduTongji = "e21dc1e8a592188271b615159dc88af7"
 
-    # Sidebar social links, these must be full URLs.
-    github = "https://github.com/wshaddix"
-    bitbucket = ""
-    stackOverflow = ""
-    linkedin = ""
-    googleplus = ""
-    facebook = ""
-    twitter = "https://twitter.com/wshaddix"
-    youtube = ""
-
-    # Other social-like sidebar links
-    rss = true  # switch to true to enable RSS icon link
-    # flattr = ""  # populate with your flattr uid
+  # ICP Number (China Only)
+  # ICP = "苏ICP备16005986号-2"

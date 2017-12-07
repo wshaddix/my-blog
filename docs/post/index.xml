@@ -5,30 +5,31 @@
     <link>http://www.wesshaddix.com/post/</link>
     <description>Recent content in Posts on Wes Shaddix</description>
     <generator>Hugo -- gohugo.io</generator>
-    <language>en-us</language>
-    <lastBuildDate>Tue, 24 Oct 2017 11:01:19 -0400</lastBuildDate>
+    <language>en</language>
+    <copyright>© This post is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License. Please give a reference to this source if you would like to quote or reproduce.</copyright>
+    <lastBuildDate>Wed, 06 Dec 2017 17:31:03 -0500</lastBuildDate>
     
 	<atom:link href="http://www.wesshaddix.com/post/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
-      <title>MVP Startup Checklist</title>
-      <link>http://www.wesshaddix.com/blog/2017/10/24/mvp-startup-checklist/</link>
-      <pubDate>Tue, 24 Oct 2017 11:01:19 -0400</pubDate>
+      <title>Docker Swarm on Azure</title>
+      <link>http://www.wesshaddix.com/post/docker-swarm/</link>
+      <pubDate>Wed, 06 Dec 2017 17:31:03 -0500</pubDate>
       
-      <guid>http://www.wesshaddix.com/blog/2017/10/24/mvp-startup-checklist/</guid>
-      <description>This is the beginning of a series on trying to build a viable (profitable) startup from a side project that I have been wanting to do for a while.
-This post will serve as the initial brain dump and will ultimately be a table of contents for future blog posts on each step that I go through in order to serve as a guide for others that want to learn from my many mistakes that I&amp;rsquo;m sure I will make.</description>
+      <guid>http://www.wesshaddix.com/post/docker-swarm/</guid>
+      <description>I&amp;rsquo;m learning docker swarm mode and need a realistic simulation of setting up a multi-node cluster. Azure is an ideal platform to test things out. My goal is to create a docker swarm cluster within a single region. Creating a multi-region swarm cluster requires creating virutal networks in different regions and connecting those vnets through a vpn gateway which is not something I&amp;rsquo;m ready to tackle just yet.
+My Setup I&amp;rsquo;m running a windows 10 workstation with docker for windows.</description>
     </item>
     
     <item>
       <title>Showing UTF8 Characters in TeamCity 10 Build Logs</title>
-      <link>http://www.wesshaddix.com/blog/2017/08/15/showing-utf8-characters-in-teamcity-10-build-logs/</link>
+      <link>http://www.wesshaddix.com/post/team-city-utf-8/</link>
       <pubDate>Tue, 15 Aug 2017 21:43:19 -0400</pubDate>
       
-      <guid>http://www.wesshaddix.com/blog/2017/08/15/showing-utf8-characters-in-teamcity-10-build-logs/</guid>
+      <guid>http://www.wesshaddix.com/post/team-city-utf-8/</guid>
       <description>As part of a continuous integration pipeline I&amp;rsquo;m running my Postman api tests after every deployment to our development environment via TeamCity and Newman. One issue that I encountered was that the TeamCity agent build log wasn&amp;rsquo;t showing formatted newman output correctly because by default it doesn&amp;rsquo;t show UTF8. In order to fix this you just have to update your C:\TeamCity\buildAgent\conf\buildAgent.properties file to include
-teamcity.runner.commandline.stdstreams.encoding=UTF-8  and then restart the TeamCity Agent service.</description>
+teamcity.runner.commandline.stdstreams.encoding=UTF-8 and then restart the TeamCity Agent service.</description>
     </item>
     
   </channel>
