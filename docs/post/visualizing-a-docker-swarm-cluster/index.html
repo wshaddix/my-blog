@@ -5,7 +5,7 @@
   <meta charset="utf-8" />
 
   
-  <title>Showing UTF8 Characters in TeamCity 10 Build Logs</title>
+  <title>Visualizing a Docker Swarm Cluster</title>
 
   
   
@@ -16,16 +16,16 @@
 
   
   <meta name="author" content="Wes Shaddix" />
-  <meta name="description" content="As part of a continuous integration pipeline I&amp;rsquo;m running my Postman api tests after every deployment to our development environment via TeamCity and Newman. One issue that I encountered was that the TeamCity agent build log wasn&amp;rsquo;t showing formatted newman output correctly because by default it doesn&amp;rsquo;t show UTF8. In order to fix this you just have to update your C:\TeamCity\buildAgent\conf\buildAgent.properties file to include
-teamcity.runner.commandline.stdstreams.encoding=UTF-8 and then restart the TeamCity Agent service." />
+  <meta name="description" content="Goal In a previous blog post I setup a docker swarm cluster. Now I want a way to visualize what the swarm cluster looks like. How many nodes I have and which containers are running. Also as I change the state of the swarm cluster through docker commands I&amp;rsquo;d like to visualize what is actually happening.
+The solution There is a docker image named dockersamples/visualizer that will give you a url that you can go to in order to view your swarm cluster." />
 
   
   
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:site" content="@wshaddix" />
-    <meta name="twitter:title" content="Showing UTF8 Characters in TeamCity 10 Build Logs" />
-    <meta name="twitter:description" content="As part of a continuous integration pipeline I&amp;rsquo;m running my Postman api tests after every deployment to our development environment via TeamCity and Newman. One issue that I encountered was that the TeamCity agent build log wasn&amp;rsquo;t showing formatted newman output correctly because by default it doesn&amp;rsquo;t show UTF8. In order to fix this you just have to update your C:\TeamCity\buildAgent\conf\buildAgent.properties file to include
-teamcity.runner.commandline.stdstreams.encoding=UTF-8 and then restart the TeamCity Agent service." />
+    <meta name="twitter:title" content="Visualizing a Docker Swarm Cluster" />
+    <meta name="twitter:description" content="Goal In a previous blog post I setup a docker swarm cluster. Now I want a way to visualize what the swarm cluster looks like. How many nodes I have and which containers are running. Also as I change the state of the swarm cluster through docker commands I&amp;rsquo;d like to visualize what is actually happening.
+The solution There is a docker image named dockersamples/visualizer that will give you a url that you can go to in order to view your swarm cluster." />
     <meta name="twitter:image" content="http://www.wesshaddix.com/img/avatar.jpg" />
   
 
@@ -35,7 +35,7 @@ teamcity.runner.commandline.stdstreams.encoding=UTF-8 and then restart the TeamC
 <meta name="generator" content="Hugo 0.31.1" />
 
 
-<link rel="canonical" href="http://www.wesshaddix.com/post/team-city-utf-8/" />
+<link rel="canonical" href="http://www.wesshaddix.com/post/visualizing-a-docker-swarm-cluster/" />
 <link rel="alternative" href="http://www.wesshaddix.com/index.xml" title="Wes Shaddix" type="application/atom+xml" />
 
 
@@ -212,23 +212,54 @@ teamcity.runner.commandline.stdstreams.encoding=UTF-8 and then restart the TeamC
 
   <section class="main post-detail">
     <header class="post-header">
-      <h1 class="post-title">Showing UTF8 Characters in TeamCity 10 Build Logs</h1>
-      <p class="post-meta">@Wes Shaddix · Aug 15, 2017 · 1 min read</p>
+      <h1 class="post-title">Visualizing a Docker Swarm Cluster</h1>
+      <p class="post-meta">@Wes Shaddix · Dec 8, 2017 · 2 min read</p>
     </header>
-    <article class="post-content"><p>As part of a continuous integration pipeline I&rsquo;m running my Postman api tests after every deployment to our development environment via TeamCity and Newman. One issue that I encountered was that the TeamCity agent build log wasn&rsquo;t showing formatted newman output correctly because by default it doesn&rsquo;t show UTF8. In order to fix this you just have to update your <code>C:\TeamCity\buildAgent\conf\buildAgent.properties</code> file to include</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-Bash" data-lang="Bash">teamcity.runner.commandline.stdstreams.encoding<span style="color:#f92672">=</span>UTF-8</code></pre></div>
-<p>and then restart the TeamCity Agent service. The next time newman runs, you&rsquo;ll be able to decipher your build log.</p>
-</article>
+    <article class="post-content">
+
+<h1 id="goal">Goal</h1>
+
+<p>In a <a href="http://www.wesshaddix.com/post/three-node-docker-swarm-cluster/">previous blog post</a> I setup a docker swarm cluster. Now I want a way to visualize what the swarm cluster looks like. How many nodes I have and which containers are running. Also as I change the state of the swarm cluster through docker commands I&rsquo;d like to visualize what is actually happening.</p>
+
+<h2 id="the-solution">The solution</h2>
+
+<p>There is a docker image named <code>dockersamples/visualizer</code> that will give you a url that you can go to in order to view your swarm cluster. We will run this as a serivce on our cluster and bind it to run on <strong>just the manager node</strong> and not on the workers.</p>
+
+<h3 id="open-up-a-port-to-host-the-visualizer-website-on">Open up a port to host the visualizer website on</h3>
+
+<p>If you recall from the <a href="http://www.wesshaddix.com/post/three-node-docker-swarm-cluster/">previous blog post</a> we setup our network only allow ssh traffic on port 22. We need to allow an additional port so that we are able to get to the visualizer service once we install it. In order to do that run the following command.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell">az network nsg rule create -g docker-us-east --nsg-name nsg-docker-swarm -n allow-http-8080 --destination-port-ranges 8080 --access Allow --description <span style="color:#e6db74">&#34;Allow inbound http 8080 traffic&#34;</span> --priority 101</code></pre></div>
+<h3 id="install-the-visualizer-service">Install the visualizer service</h3>
+
+<p>Connect to your docker swarm manager node and setup a new service using the visualizer image.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell">docker service create \
+  --name=viz \
+  --publish=8080<span style="color:#960050;background-color:#1e0010">:</span>8080/tcp \
+  --constraint=node.role==manager \
+  --mount=type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock \
+  dockersamples/visualizer</code></pre></div>
+<h3 id="verify-that-it-works">Verify that it works</h3>
+
+<p>If you navigate to <a href="http://your-swarm-cluster:8080">http://your-swarm-cluster:8080</a> you will see what it looks like. Note that you can use either the manager or either of the worker&rsquo;s public ip addresses to reach the service. Docker swarm ensures that all services are available on all of the ip addresses.</p>
+
+<h2 id="cleaning-up">Cleaning up</h2>
+
+<p>As before, the following command from the azure cli will deprovision the entire swarm cluster and all it&rsquo;s resources so that you don&rsquo;t get charged for it.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell">az group delete -n docker-us-east</code></pre></div></article>
     <footer class="post-footer">
       
       <ul class="post-tags">
         
-          <li><a href="http://www.wesshaddix.com/tags/teamcity"><span class="tag">Teamcity</span></a></li>
+          <li><a href="http://www.wesshaddix.com/tags/docker"><span class="tag">Docker</span></a></li>
+        
+          <li><a href="http://www.wesshaddix.com/tags/docker-swarm"><span class="tag">Docker-Swarm</span></a></li>
+        
+          <li><a href="http://www.wesshaddix.com/tags/visualizer"><span class="tag">Visualizer</span></a></li>
         
       </ul>
       
       <p class="post-copyright">
-        © This post is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License. Please give a reference to this source if you would like to quote or reproduce. This post was published <strong>114</strong> days ago. Content in the post may be inaccurate or wrong now.
+        © This post is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License. Please give a reference to this source if you would like to quote or reproduce.
       </p>
     </footer>
     

@@ -7,7 +7,7 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
     <copyright>© This post is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License. Please give a reference to this source if you would like to quote or reproduce.</copyright>
-    <lastBuildDate>Wed, 06 Dec 2017 17:31:03 -0500</lastBuildDate>
+    <lastBuildDate>Fri, 08 Dec 2017 18:49:43 -0500</lastBuildDate>
     
 	<atom:link href="http://www.wesshaddix.com/tags/index.xml" rel="self" type="application/rss+xml" />
     
@@ -15,7 +15,7 @@
     <item>
       <title>Docker</title>
       <link>http://www.wesshaddix.com/tags/docker/</link>
-      <pubDate>Wed, 06 Dec 2017 17:31:03 -0500</pubDate>
+      <pubDate>Fri, 08 Dec 2017 18:49:43 -0500</pubDate>
       
       <guid>http://www.wesshaddix.com/tags/docker/</guid>
       <description></description>
@@ -24,7 +24,7 @@
     <item>
       <title>Docker Swarm</title>
       <link>http://www.wesshaddix.com/tags/docker-swarm/</link>
-      <pubDate>Wed, 06 Dec 2017 17:31:03 -0500</pubDate>
+      <pubDate>Fri, 08 Dec 2017 18:49:43 -0500</pubDate>
       
       <guid>http://www.wesshaddix.com/tags/docker-swarm/</guid>
       <description></description>
@@ -36,6 +36,15 @@
       <pubDate>Tue, 15 Aug 2017 21:43:19 -0400</pubDate>
       
       <guid>http://www.wesshaddix.com/tags/teamcity/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Visualizer</title>
+      <link>http://www.wesshaddix.com/tags/visualizer/</link>
+      <pubDate>Fri, 08 Dec 2017 18:49:43 -0500</pubDate>
+      
+      <guid>http://www.wesshaddix.com/tags/visualizer/</guid>
       <description></description>
     </item>
     
