@@ -63,7 +63,7 @@ services:
       mode: global
     environment:
       - SPM_TOKEN=<YOUR SPM TOKEN>
-      - LOGSENE_TOKEN=<16149055-8e94-4a8d-be80-a68962c60730>
+      - LOGSENE_TOKEN=<YOUR LOGSENE TOKEN>
 ```
 
 I know that the SPM_TOKEN and LOGSENE_TOKEN shouldn't be in a git repo. I'll address that later, this is for learning/demo purposes only :)
