@@ -11,11 +11,17 @@ Make sure hugo.exe is in your path so that you can run it from any folder from y
 ## Create a blank post
 
 ```powershell
-hugo new post/<name of your post>
+hugo new post/<name of your post>.md
 ```
 
 ## Run a local version of your site with live updates
 
 ```powershell
 hugo server --watch --buildDrafts
+```
+
+## Build the blog site
+
+```powershell
+hugo
 ```

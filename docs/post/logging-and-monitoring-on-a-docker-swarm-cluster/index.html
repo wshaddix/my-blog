@@ -5,7 +5,7 @@
   <meta charset="utf-8" />
 
   
-  <title>Showing UTF8 Characters in TeamCity 10 Build Logs</title>
+  <title>Logging and Monitoring on a Docker Swarm Cluster</title>
 
   
   
@@ -16,16 +16,18 @@
 
   
   <meta name="author" content="Wes Shaddix" />
-  <meta name="description" content="As part of a continuous integration pipeline I&amp;rsquo;m running my Postman api tests after every deployment to our development environment via TeamCity and Newman. One issue that I encountered was that the TeamCity agent build log wasn&amp;rsquo;t showing formatted newman output correctly because by default it doesn&amp;rsquo;t show UTF8. In order to fix this you just have to update your C:\TeamCity\buildAgent\conf\buildAgent.properties file to include
-teamcity.runner.commandline.stdstreams.encoding=UTF-8 and then restart the TeamCity Agent service." />
+  <meta name="description" content="How to setup data analytics, metrics and events collection and logging on a docker swarm cluster using sematext SPM and Logsene.
+
+" />
 
   
   
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:site" content="@wshaddix" />
-    <meta name="twitter:title" content="Showing UTF8 Characters in TeamCity 10 Build Logs" />
-    <meta name="twitter:description" content="As part of a continuous integration pipeline I&amp;rsquo;m running my Postman api tests after every deployment to our development environment via TeamCity and Newman. One issue that I encountered was that the TeamCity agent build log wasn&amp;rsquo;t showing formatted newman output correctly because by default it doesn&amp;rsquo;t show UTF8. In order to fix this you just have to update your C:\TeamCity\buildAgent\conf\buildAgent.properties file to include
-teamcity.runner.commandline.stdstreams.encoding=UTF-8 and then restart the TeamCity Agent service." />
+    <meta name="twitter:title" content="Logging and Monitoring on a Docker Swarm Cluster" />
+    <meta name="twitter:description" content="How to setup data analytics, metrics and events collection and logging on a docker swarm cluster using sematext SPM and Logsene.
+
+" />
     <meta name="twitter:image" content="http://www.wesshaddix.com/img/avatar.jpg" />
   
 
@@ -35,7 +37,7 @@ teamcity.runner.commandline.stdstreams.encoding=UTF-8 and then restart the TeamC
 <meta name="generator" content="Hugo 0.31.1" />
 
 
-<link rel="canonical" href="http://www.wesshaddix.com/post/team-city-utf-8/" />
+<link rel="canonical" href="http://www.wesshaddix.com/post/logging-and-monitoring-on-a-docker-swarm-cluster/" />
 <link rel="alternative" href="http://www.wesshaddix.com/index.xml" title="Wes Shaddix" type="application/atom+xml" />
 
 
@@ -212,23 +214,107 @@ teamcity.runner.commandline.stdstreams.encoding=UTF-8 and then restart the TeamC
 
   <section class="main post-detail">
     <header class="post-header">
-      <h1 class="post-title">Showing UTF8 Characters in TeamCity 10 Build Logs</h1>
-      <p class="post-meta">@Wes Shaddix · Aug 15, 2017 · 1 min read</p>
+      <h1 class="post-title">Logging and Monitoring on a Docker Swarm Cluster</h1>
+      <p class="post-meta">@Wes Shaddix · Dec 12, 2017 · 2 min read</p>
     </header>
-    <article class="post-content"><p>As part of a continuous integration pipeline I&rsquo;m running my Postman api tests after every deployment to our development environment via TeamCity and Newman. One issue that I encountered was that the TeamCity agent build log wasn&rsquo;t showing formatted newman output correctly because by default it doesn&rsquo;t show UTF8. In order to fix this you just have to update your <code>C:\TeamCity\buildAgent\conf\buildAgent.properties</code> file to include</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-Bash" data-lang="Bash">teamcity.runner.commandline.stdstreams.encoding<span style="color:#f92672">=</span>UTF-8</code></pre></div>
-<p>and then restart the TeamCity Agent service. The next time newman runs, you&rsquo;ll be able to decipher your build log.</p>
-</article>
+    <article class="post-content"><p>How to setup data analytics, metrics and events collection and logging on a docker swarm cluster using sematext SPM and Logsene.</p>
+
+<p></p>
+
+<h1 id="overview">Overview</h1>
+
+<p>After <a href="http://www.wesshaddix.com/post/three-node-docker-swarm-cluster/">setting up a docker swarm cluster</a> and then being able to <a href="http://www.wesshaddix.com/post/visualizing-a-docker-swarm-cluster/">visualize what is running on the cluster</a> the next concept I wanted to implement was logging and metrics. I&rsquo;ve used several 3rd party logging and metrics services in the past but while reading <a href="https://www.amazon.com/Docker-Management-Design-Patterns-Services/dp/148422972X">Docker Management Design Patterns</a> I found a great all-in-one solution called <a href="https://sematext.com/">Sematext</a>.</p>
+
+<p>They have a service that includes logging, metrics, events and alerts and they have a docker agent that gets everything going pretty quickly. You simply sign up for an account, create your application and use your application tokens to configure your docker agent within your swarm cluster. The agent runs on each node of the swarm cluster.</p>
+
+<h2 id="create-your-sematext-account">Create your Sematext account</h2>
+
+<p>The first step is to head over to <a href="https://apps.sematext.com/ui/registration">Sematext&rsquo;s registration page</a> and create yourself an account.</p>
+
+<h2 id="create-your-application">Create your application</h2>
+
+<p>Next head over to the <a href="https://apps.sematext.com/ui/integrations/create/docker">docker integration page</a> and create a new application for the cluster. Be sure to also include logging support (checked by default)</p>
+
+<p><img src="http://www.wesshaddix.com/img/sematext-new-app.png" alt="screenshot" /></p>
+
+<h2 id="configure-your-swarm-stack">Configure your swarm stack</h2>
+
+<p>To make things easy to configure and deploy I created a <a href="https://github.com/wshaddix/docker-swarm-config">GitHub repo</a> that stores my stack definition. So far I&rsquo;ve included the vizualizer and the sematext docker agent as one stack as shown below.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yml" data-lang="yml">version: &#39;3.4&#39;
+
+services:
+  vizualizer:
+    image: dockersamples/visualizer
+    volumes:
+      - type: bind
+        source: /var/run/docker.sock
+        target: /var/run/docker.sock
+    ports:
+      - &#34;8080:8080/tcp&#34;
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+  sematext:
+    image: sematext/sematext-agent-docker
+    volumes:
+      - type: bind
+        source: /var/run/docker.sock
+        target: /var/run/docker.sock
+      - type: bind
+        source: /
+        target: /rootfs
+      - type: bind
+        source: /etc/localtime
+        target: /etc/localtime
+    deploy:
+      mode: global
+    environment:
+      - SPM_TOKEN=&lt;YOUR SPM TOKEN&gt;
+      - LOGSENE_TOKEN=&lt;16149055-8e94-4a8d-be80-a68962c60730&gt;</code></pre></div>
+<p>I know that the SPM_TOKEN and LOGSENE_TOKEN shouldn&rsquo;t be in a git repo. I&rsquo;ll address that later, this is for learning/demo purposes only :)</p>
+
+<h2 id="setting-up-your-swarm-stack">Setting up your swarm stack</h2>
+
+<p>In order to deploy your swarm stack you can:</p>
+
+<h3 id="ssh-into-your-swarm-manager-node">ssh into your swarm manager node</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell">ssh -i c<span style="color:#960050;background-color:#1e0010">:</span>\Users\wessh\.ssh\docker_rsa wshaddix@&lt;mgr public ip address&gt;</code></pre></div>
+<h3 id="checkout-your-swarm-configuration-repo">Checkout your swarm configuration repo</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell">git clone &lt;your git repo address&gt;
+cd &lt;your repo dir&gt;</code></pre></div>
+<h3 id="deploy-your-swarm-stack">Deploy your swarm stack</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell">docker stack deploy -c swarm-services.yaml</code></pre></div>
+<h2 id="view-metrics-and-logs">View metrics and logs</h2>
+
+<p>This is going to run the Sematext docker agent on each of the host nodes in the cluster. Once they start reporting back to Sematext you can view the results in the Sematext web ui.</p>
+
+<h3 id="metrics">Metrics</h3>
+
+<p><img src="http://www.wesshaddix.com/img/sematext-metrics.png" alt="metrics" /></p>
+
+<h3 id="logs">Logs</h3>
+
+<p><img src="http://www.wesshaddix.com/img/sematext-logs.png" alt="logs" /></p></article>
     <footer class="post-footer">
       
       <ul class="post-tags">
         
-          <li><a href="http://www.wesshaddix.com/tags/teamcity"><span class="tag">Teamcity</span></a></li>
+          <li><a href="http://www.wesshaddix.com/tags/docker"><span class="tag">Docker</span></a></li>
+        
+          <li><a href="http://www.wesshaddix.com/tags/docker-swarm"><span class="tag">Docker-Swarm</span></a></li>
+        
+          <li><a href="http://www.wesshaddix.com/tags/logging"><span class="tag">Logging</span></a></li>
+        
+          <li><a href="http://www.wesshaddix.com/tags/metrics"><span class="tag">Metrics</span></a></li>
+        
+          <li><a href="http://www.wesshaddix.com/tags/sematext"><span class="tag">Sematext</span></a></li>
         
       </ul>
       
       <p class="post-copyright">
-        © This post is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License. Please give a reference to this source if you would like to quote or reproduce. This post was published <strong>124</strong> days ago. Content in the post may be inaccurate or wrong now.
+        © This post is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License. Please give a reference to this source if you would like to quote or reproduce.
       </p>
     </footer>
     

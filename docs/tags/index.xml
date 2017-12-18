@@ -7,7 +7,7 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
     <copyright>© This post is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License. Please give a reference to this source if you would like to quote or reproduce.</copyright>
-    <lastBuildDate>Fri, 08 Dec 2017 18:49:43 -0500</lastBuildDate>
+    <lastBuildDate>Tue, 12 Dec 2017 19:11:04 -0500</lastBuildDate>
     
 	<atom:link href="http://www.wesshaddix.com/tags/index.xml" rel="self" type="application/rss+xml" />
     
@@ -15,7 +15,7 @@
     <item>
       <title>Docker</title>
       <link>http://www.wesshaddix.com/tags/docker/</link>
-      <pubDate>Fri, 08 Dec 2017 18:49:43 -0500</pubDate>
+      <pubDate>Tue, 12 Dec 2017 19:11:04 -0500</pubDate>
       
       <guid>http://www.wesshaddix.com/tags/docker/</guid>
       <description></description>
@@ -24,9 +24,36 @@
     <item>
       <title>Docker Swarm</title>
       <link>http://www.wesshaddix.com/tags/docker-swarm/</link>
-      <pubDate>Fri, 08 Dec 2017 18:49:43 -0500</pubDate>
+      <pubDate>Tue, 12 Dec 2017 19:11:04 -0500</pubDate>
       
       <guid>http://www.wesshaddix.com/tags/docker-swarm/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Logging</title>
+      <link>http://www.wesshaddix.com/tags/logging/</link>
+      <pubDate>Tue, 12 Dec 2017 19:11:04 -0500</pubDate>
+      
+      <guid>http://www.wesshaddix.com/tags/logging/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Metrics</title>
+      <link>http://www.wesshaddix.com/tags/metrics/</link>
+      <pubDate>Tue, 12 Dec 2017 19:11:04 -0500</pubDate>
+      
+      <guid>http://www.wesshaddix.com/tags/metrics/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Sematext</title>
+      <link>http://www.wesshaddix.com/tags/sematext/</link>
+      <pubDate>Tue, 12 Dec 2017 19:11:04 -0500</pubDate>
+      
+      <guid>http://www.wesshaddix.com/tags/sematext/</guid>
       <description></description>
     </item>
     
