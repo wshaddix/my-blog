@@ -88,7 +88,7 @@ cd <your repo dir>
 ### Deploy your swarm stack
 
 ```powershell
-docker stack deploy -c swarm-services.yaml
+docker stack deploy -c swarm-services.yaml monitoring
 ```
 
 ## View metrics and logs

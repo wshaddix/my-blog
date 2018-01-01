@@ -1,10 +1,13 @@
 ---
-title: "Three Node Docker Swarm with Ubuntu Zesty 17.04 on Azure"
+title: "Three Node Docker Swarm with Ubuntu 17.04 on Azure"
 author: "Wes Shaddix"
 tags: ["docker", "docker-swarm"]
-date: 2017-12-06T17:31:03-05:00
+date: 2017-12-28T17:31:03-05:00
 draft: false
 ---
+
+**[Updated] 12/28 - Improved the setup so that we can use a load balancer in front of the swarm nodes as well as improve the availability of the swarm nodes**
+
 # Overview
 
 I'm learning docker swarm mode and need a realistic simulation of setting up a multi-node cluster. Azure is an ideal platform to test things out. My goal is to create a docker swarm cluster within a **single** region. Creating a multi-region swarm cluster requires creating virutal networks in different regions and connecting those vnets through a vpn gateway which is not something I'm ready to tackle just yet.
@@ -15,15 +18,15 @@ I'm running a windows 10 workstation with docker for windows.
 
 ```powershell
 λ ver
-Microsoft Windows [Version 10.0.16299.98]
+Microsoft Windows [Version 10.0.16299.125]
 
 λ docker --version
-Docker version 17.09.0-ce, build afdb6d4
+Docker version 17.09.1-ce, build 19e2cf6
 ```
 
-## Getting the azure cli
+## Getting the azure cli v2
 
-I know I want to use the Azure CLI v2 in order to be able to manage my azure resources from the command line but I don't want to have to install/configure it along with whatever programming languages it requires. Instead I just want to use it from a docker image (I already know this exists). In order to do that, I need to download and run it in a container so from my powershell terminal I run
+I know I want to use the Azure CLI v2 in order to be able to manage my azure resources from the command line but I don't want to have to install/configure it along with whatever programming languages it requires. Instead I just want to use it from a docker image. In order to do that, I need to download and run it in a container so from my **powershell** terminal I run
 
 ```powershell
 docker run --rm -v ${HOME}:/root -it azuresdk/azure-cli-python:latest
@@ -41,128 +44,152 @@ az login
 
 When you run this command it will give you a url along with a code. Simply open the url in your web browser and paste in the code and it will authorize your Azure CLI to access your Azure account.
 
-## Creating a resource group
+## The script
 
-In order to be able to easily organize and later remove any and all resources that are related to my docker swarm I want to put everything in resource groups. Resource groups are bound to geographic locations so I will create one group that is close to my location. The location could be [anywhere that Azure supports](https://azure.microsoft.com/en-us/regions/).
+I'm going to show the entire script here that you can run from the azure cli for convenience. In the rest of this post I'll describe what each command does.
 
-```powershell
-az group create -l eastus -n docker-us-east
+```bash
+RESOURCE_GROUP="dev-docker-swarm-us-east"
+VNET_NAME="vnet-docker-swarm"
+SUBNET_NAME="subnet-docker-swarm"
+NSG_NAME="nsg-docker-swarm"
+LOAD_BALANCER_NAME="load-balancer-swarm-cluster"
+OS_IMAGE="Canonical:UbuntuServer:17.04:17.04.201711210"
+VM_SIZE="Standard_B2S"
+ADMIN_USERNAME="wshaddix"
+AVAILABILITY_SET_NAME="availability-set-swarm-nodes"
+
+# create a resource group
+az group create -l eastus -n $RESOURCE_GROUP
+
+# create a network security group
+az network nsg create -g $RESOURCE_GROUP -n $NSG_NAME
+
+# create a virtual network
+az network vnet create -g $RESOURCE_GROUP -n $VNET_NAME
+
+# create a subnet
+az network vnet subnet create -g $RESOURCE_GROUP -n $SUBNET_NAME --vnet-name $VNET_NAME --address-prefix 10.0.0.0/24 --network-security-group $NSG_NAME
+
+# create a public ip address for the load balancer (front-end)
+az network public-ip create -g $RESOURCE_GROUP -n $LOAD_BALANCER_NAME-ip
+
+# create a load balancer
+az network lb create -g $RESOURCE_GROUP -n $LOAD_BALANCER_NAME --public-ip-address $LOAD_BALANCER_NAME-ip --frontend-ip-name $LOAD_BALANCER_NAME-front-end --backend-pool-name $LOAD_BALANCER_NAME-back-end
+
+# create a load balancer probe on port 80
+az network lb probe create -g $RESOURCE_GROUP -n load-balancer-health-probe-80 --lb-name $LOAD_BALANCER_NAME --protocol tcp --port 80
+
+# create a load balancer traffic rule for port 80
+az network lb rule create -g $RESOURCE_GROUP -n load-balancer-traffic-rule-80 --lb-name $LOAD_BALANCER_NAME --protocol tcp --frontend-port 80 --backend-port 80 --frontend-ip-name $LOAD_BALANCER_NAME-front-end  --backend-pool-name $LOAD_BALANCER_NAME-back-end --probe-name load-balancer-health-probe-80
+
+# create three NAT rules for port 22 (so we can ssh to each of the three nodes via the load balancer's public ip address)
+for i in `seq 1 3`; do
+  az network lb inbound-nat-rule create -g $RESOURCE_GROUP -n nat-rule-for-node-$i-ssh --lb-name $LOAD_BALANCER_NAME --protocol tcp --frontend-port 422$i --backend-port 22 --frontend-ip-name $LOAD_BALANCER_NAME-front-end
+done
+
+# allow port 22 (ssh) traffic into the network
+az network nsg rule create -g $RESOURCE_GROUP -n allow-ssh --nsg-name $NSG_NAME --destination-port-ranges 22 --access Allow --description "Allow inbound ssh traffic" --priority 100
+
+# allow port 80 (http) traffic into the network
+az network nsg rule create -g $RESOURCE_GROUP -n allow-http --nsg-name $NSG_NAME --destination-port-ranges 80 --access Allow --description "Allow inbound http traffic" --priority 200
+
+# create three virtual network cards and associate with the network security group and load balancer. bind each NIC to one of the ssh nat rules we created
+for i in `seq 1 3`; do
+  az network nic create -g $RESOURCE_GROUP -n node-$i-private-nic --vnet-name $VNET_NAME --subnet $SUBNET_NAME --lb-name $LOAD_BALANCER_NAME --lb-address-pools $LOAD_BALANCER_NAME-back-end --lb-inbound-nat-rules nat-rule-for-node-$i-ssh
+done
+
+# create an availability set with 3 fault domains and 3 update domains
+az vm availability-set create -g $RESOURCE_GROUP -n $AVAILABILITY_SET_NAME --platform-fault-domain-count 3 --platform-update-domain-count 3
+
+# generate ssh keys
+ssh-keygen -t rsa -f ~/.ssh/docker_rsa -N ""
+
+# create three virtual machines
+for i in `seq 1 3`; do
+  az vm create -g $RESOURCE_GROUP -n node-$i --ssh-key-value "~/.ssh/docker_rsa.pub" --nics node-$i-private-nic --image $OS_IMAGE --size $VM_SIZE --authentication-type ssh --admin-username $ADMIN_USERNAME --availability-set $AVAILABILITY_SET_NAME --os-disk-name node-$i-os-disk
+done
+
 ```
 
-## Creating the virtual network
+## Create a resource group
 
-Next up, we need a virtual network that the docker hosts can connect to in order to communicate with each other.
+In order to be able to easily organize and later remove any and all resources that are related to the docker swarm cluster I put everything in a resource group. Resource groups are bound to geographic locations so I created one that is close to my location. The location could be [anywhere that Azure supports](https://azure.microsoft.com/en-us/regions/).
 
-```powershell
-az network vnet create -g docker-us-east -n docker-swarm-vnet
-```
+## Create a network security group
 
-## Creating the network security group
+We want to protect our network traffic with a firewall so we create a new network security group next. We need the network security group to exist before we create our virtual network and subnet so that we can associate the subnet to the network security group. That way, any rules that we create in the firewall will apply to everything connected to the subnet. This way we don't have to manage rules for each individual NIC that gets attached to the subnet but instead we can manage the subnet as a whole.
 
-In order have the ability to manage what network traffic want to allow or deny on our new virtual network we will create a security group.
+## Create a virtual network
 
-```powershell
-az network nsg create -g docker-us-east -n nsg-docker-swarm
-```
+We start off by creating a network that each of the swarm nodes will connect to. We also create a subnet within the network to isolate traffic between the nodes.
 
-## Allowing ssh traffic to our virtual network
+## Create a subnet
 
-Now we want to allow public ssh traffic onto our virtual network so that we are able to ssh and manage the docker nodes that we'll provision later.
+We create a subnet within the virtual network and associate it to the network security group that we created previously. Any rules that we create later on for the firewall will apply to everything in this subnet.
 
-```powershell
-az network nsg rule create -g docker-us-east --nsg-name nsg-docker-swarm -n allow-ssh --destination-port-ranges 22 --access Allow --description "Allow inbound ssh traffic" --priority 100
-```
+## Create a public ip address for the load balancer (front-end)
 
-## Creating the subnet
+Now that we have a network setup we'll start creating a load balancer that will balance traffic between each node in the swarm cluster. There will only be one public ip to the swarm cluster and that will be the ip address of the load balancer.
 
-We need to create a subnet so that the docker nodes are able to communicate with each other. This subnet will also be protected by the `nsg-docker-swarm` network security group that we just created.
+## Create a load balancer
 
-```powershell
-az network vnet subnet create -g docker-us-east --vnet-name docker-swarm-vnet -n docker-subnet --address-prefix 10.0.0.0/24 --network-security-group nsg-docker-swarm
-```
+Next we create a load balancer and associate it with the public ip address that we just created. The load balancer has a front-end ip and a back-end ip address pool that it balances traffic between.
 
-## Creating the public static ip addresses
+## Create a load balancer probe on port 80
 
-In order for us to be able to ssh to the docker nodes over the internet we need a public ip address that we can assign to the host virtal machines.
+The load balancer has to have a way to detect if the nodes are healthy that it sends traffic to. We create a probe that will connect with each node using tcp port 80 traffic. If the node responds then the load balancer knows that the node is ready to receive traffic.
 
-```powershell
-az network public-ip create -g docker-us-east -n docker-swarm-mgr-ip --allocation-method Static
+## Create a load balancer traffic rule for port 80
 
-az network public-ip create -g docker-us-east -n docker-swarm-worker1-ip --allocation-method Static
+With the health probe in place, next we setup a traffic rule in the load balancer to forward tcp port 80 traffic to the nodes that are in the back-end pool. We associate this traffic rule with the health probe that we created.
 
-az network public-ip create -g docker-us-east -n docker-swarm-worker2-ip --allocation-method Static
-```
+## Create three NAT rules for port 22 (so we can ssh to each of the three nodes via the load balancer's public ip address)
 
-The output of this command will tell you what ip addresses were allocated.
+To finish out the load balancer setup we need to create NAT rules that will allow us to reach each individual node in the cluster when we need to manage it via ssh. In order to do this, we setup rules that will route tcp port 4221, 4222 and 4223 traffic to port 22 (the ssh port) in the back-end pool. The key thing is that we name each NAT rule with a unique name that we will later use to bind to the NICs of the swarm nodes. This is what will allow us to ssh to port 4221, 4222 and 4223 and connect to node 1, node 2 and node 3 behind the load balancer.
 
-## Creating the NICs for the public connections of the docker nodes
+## Allow port 22 (ssh) traffic into the network
 
-The virtual machines will need to have a NIC for the public ip address that we created in the previous step.
+In order to get tcp port 22 traffic into the network we have to allow for it in the firewall (network security group or NSG).
 
-```powershell
-az network nic create -g docker-us-east -n docker-swarm-mgr-public-nic --vnet-name docker-swarm-vnet --subnet docker-subnet --public-ip-address docker-swarm-mgr-ip
+## Allow port 80 (http) traffic into the network
 
-az network nic create -g docker-us-east -n docker-swarm-worker1-public-nic --vnet-name docker-swarm-vnet --subnet docker-subnet --public-ip-address
-docker-swarm-worker1-ip
+Just like port 22 ssh traffic above, we also have to let tcp port 80 traffic into the network.
 
-az network nic create -g docker-us-east -n docker-swarm-worker2-public-nic --vnet-name docker-swarm-vnet --subnet docker-subnet --public-ip-address docker-swarm-worker2-ip
-```
+## Create three virtual network cards
+
+In order to connect the swarm nodes together we have to create a NIC for them and associate the NICs with the subnet that we previously setup. We give each NIC a unique name, we place it into the load balancer's back-end pool and we also associate the NIC with the uniquely named inbound NAT rule that we setup in order to allow us to reach the node via the load balancer for ssh traffic.
+
+## Create an availability set with 3 fault domains and 3 update domains
+
+The virtual machines that we setup as swarm nodes must all be in the same availability set in order for the load balancer to be able to route traffic to them. You can read more about availability sets [here](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/manage-availability?toc=%2fazure%2fvirtual-machines%2flinux%2ftoc.json) but in essence, what an availability set does is gives you a way to ensure that not all of your vm nodes will be rebooted at the same time (update domains) and provisions them across different physical hardware (fault domains) in order to increase their availability and up-time. In a future post I'd like to explore using the new preview feature of [Availability Zones](https://docs.microsoft.com/en-us/azure/availability-zones/az-overview) to further improve the fault tolerance of the swarm cluster.
 
 ## Generate ssh keys
 
-We want to generate an ssh keypair so that we can access the docker nodes after we provision them
+In order to manage the virtual machines we generate an ssh keypair so that each vm can be managed by the same ssh key for ease of administration.
 
-```powershell
-ssh-keygen -t rsa -f ~/.ssh/docker_rsa -N ""
-```
+## Create three virtual machines
 
-## Create the docker swarm manager
-
-We'll create an Ubuntu 17.04 VM and attach the public and private NICs that we just created. This will join it to the subnet that we created.
-
-```powershell
-az vm create -g docker-us-east -n docker-swarm-mgr --ssh-key-value "~/.ssh/docker_rsa.pub" --nics docker-swarm-mgr-public-nic --image Canonical:UbuntuServer:17.04:17.04.201711210 --size Standard_B2S --authentication-type ssh --admin-username wshaddix --os-disk-name docker-swarm-mgr-os-disk
-```
-
-## Verify ssh access to the docker swarm manager
-
-Once the swarm manager vm is provisioned, ensure that things are setup correctly by starting an ssh connection with the vm.
-
-```powershell
-ssh -i c:\Users\wessh\.ssh\docker_rsa wshaddix@<mgr public ip address>
-```
-
-## Create the first docker swarm worker
-
-```powershell
-az vm create -g docker-us-east -n docker-swarm-worker1 --ssh-key-value "~/.ssh/docker_rsa.pub" --nics docker-swarm-worker1-public-nic --image Canonical:UbuntuServer:17.04:17.04.201711210 --size Standard_B2S --authentication-type ssh --admin-username wshaddix --os-disk-name docker-swarm-worker1-os-disk
-```
-
-## Verify ssh access to the first docker swarm worker
-
-Once the swarm manager vm is provisioned, ensure that things are setup correctly by starting an ssh connection with the vm.
-
-```powershell
-ssh -i c:\Users\wessh\.ssh\docker_rsa wshaddix@<worker1 public ip address>
-```
-
-## Create the second docker swarm worker
-
-```powershell
-az vm create -g docker-us-east -n docker-swarm-worker2 --ssh-key-value "~/.ssh/docker_rsa.pub" --nics docker-swarm-worker2-public-nic --image Canonical:UbuntuServer:17.04:17.04.201711210 --size Standard_B2S --authentication-type ssh --admin-username wshaddix --os-disk-name docker-swarm-worker2-os-disk
-```
-
-## Verify ssh access to the second docker swarm worker
-
-Once the swarm manager vm is provisioned, ensure that things are setup correctly by starting an ssh connection with the vm.
-
-```powershell
-ssh -i c:\Users\wessh\.ssh\docker_rsa wshaddix@<worker2 public ip address>
-```
+Finally we can provision the virtual machines. For each VM we give it a unique name that aligns with the name of it's NIC and OS disk. We place it in the availability set that we created and associate it with the public key of the ssh key pair that we generated previously.
 
 ## Install docker on all three nodes
 
 **On all three nodes** you have to install docker. Repeat these commands on each node via an ssh session.
+
+### SSH to the specific node
+
+In order to reach each individual node via the load balancer you have to ssh to the correct port based on how we setup the NAT rules earlier.
+
+```powershell
+# node 1
+ssh -i ~/.ssh/docker_rsa wshaddix@<load balancer ip address> -p 4221
+
+# node 2
+ssh -i ~/.ssh/docker_rsa wshaddix@<load balancer ip address> -p 4222
+
+# node 3
+ssh -i ~/.ssh/docker_rsa wshaddix@<load balancer ip address> -p 4223
+```
 
 ### Setup the docker apt repository
 
@@ -188,7 +215,7 @@ sudo add-apt-repository \
 ```powershell
 sudo apt-get update
 
-sudo apt-get install docker-ce
+sudo apt-get install docker-ce=17.09.1~ce-0~ubuntu
 ```
 
 ### Verify that docker is working correctly
@@ -227,7 +254,7 @@ The output of the above command will tell you what you need to run on the worker
 On the worker nodes run the command (my example is below) indicated when you initialized the swarm cluster from the previous step.
 
 ```powershell
-docker swarm join --token SWMTKN-1-490uiqnix2tsuknaj1g4nz95c9rw3ckuwmaafdpy4h59cnyu7a-21hx4q1v6i4i76lrndhssdcr5 10.0.0.4:2377
+docker swarm join --token <your swarm cluster's join token> 10.0.0.4:2377
 ```
 
 ## Verify the swarm cluster is up
@@ -243,7 +270,7 @@ docker node ls
 After you are done and ready to deprovision all of the resources that we've created so that you are not billed for them, you can simply delete the resource group.
 
 ```powershell
-az group delete -n docker-us-east
+az group delete -n dev-docker-swarm-us-east
 ```
 
 You also may want to delete your docker_rsa ssh keypair if you are going to re-run these steps in the future.
@@ -263,7 +290,7 @@ If you are creating and removing swarm clusters frequently it is faster to run a
 After you've logged into your Azure account you can run
 
 ```powershell
-wget -O - https://gist.githubusercontent.com/wshaddix/3acf084908f31d7c18f1f20f53b19147/raw/d52485a4e9e54576323a96630db0e7baf6dc8c12/Setting%2520up%2520docker%2520swarm%2520on%2520azure | bash
+wget -O - https://gist.githubusercontent.com/wshaddix/3acf084908f31d7c18f1f20f53b19147/raw/bf4ea5aa97a92020be50cd1c0cc2f7c7a6b65fbc/Setting%2520up%2520docker%2520swarm%2520on%2520azure | bash
 ```
 
 This will setup the three virtual machines.
@@ -273,7 +300,7 @@ This will setup the three virtual machines.
 Next, you can ssh into each of the three nodes and run
 
 ```powershell
-wget -O - https://gist.githubusercontent.com/wshaddix/91058d471c525050f005e98eda85e3d3/raw/e25b03b180e456f1e9dd27bba7cea13823992b98/Install%2520Docker%2520on%2520Ubuntu%252017.04 | bash
+wget -O - https://gist.githubusercontent.com/wshaddix/91058d471c525050f005e98eda85e3d3/raw/46de5d48bd4c4e51a9701e743c85fbf4dc3a3ce4/Install%2520Docker%2520on%2520Ubuntu%252017.04 | bash
 ```
 
 ### Initialize swarm mode

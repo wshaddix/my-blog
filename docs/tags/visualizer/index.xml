@@ -7,7 +7,7 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
     <copyright>© This post is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License. Please give a reference to this source if you would like to quote or reproduce.</copyright>
-    <lastBuildDate>Fri, 08 Dec 2017 18:49:43 -0500</lastBuildDate>
+    <lastBuildDate>Sun, 31 Dec 2017 18:49:43 -0500</lastBuildDate>
     
 	<atom:link href="http://www.wesshaddix.com/tags/visualizer/index.xml" rel="self" type="application/rss+xml" />
     
@@ -15,11 +15,11 @@
     <item>
       <title>Visualizing a Docker Swarm Cluster</title>
       <link>http://www.wesshaddix.com/post/visualizing-a-docker-swarm-cluster/</link>
-      <pubDate>Fri, 08 Dec 2017 18:49:43 -0500</pubDate>
+      <pubDate>Sun, 31 Dec 2017 18:49:43 -0500</pubDate>
       
       <guid>http://www.wesshaddix.com/post/visualizing-a-docker-swarm-cluster/</guid>
-      <description>Goal In a previous blog post I setup a docker swarm cluster. Now I want a way to visualize what the swarm cluster looks like. How many nodes I have and which containers are running. Also as I change the state of the swarm cluster through docker commands I&amp;rsquo;d like to visualize what is actually happening.
-The solution There is a docker image named dockersamples/visualizer that will give you a url that you can go to in order to view your swarm cluster.</description>
+      <description>[Updated] 12&amp;frasl;31 - Updated instructions to leverage the load balancer configuration that we added to the swarm cluster.
+Goal In a previous blog post I setup a docker swarm cluster. Now I want a way to visualize what the swarm cluster looks like. How many nodes I have and which containers are running. Also as I change the state of the swarm cluster through docker commands I&amp;rsquo;d like to visualize what is actually happening.</description>
     </item>
     
   </channel>

@@ -285,7 +285,7 @@ services:
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell">git clone &lt;your git repo address&gt;
 cd &lt;your repo dir&gt;</code></pre></div>
 <h3 id="deploy-your-swarm-stack">Deploy your swarm stack</h3>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell">docker stack deploy -c swarm-services.yaml</code></pre></div>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell">docker stack deploy -c swarm-services.yaml monitoring</code></pre></div>
 <h2 id="view-metrics-and-logs">View metrics and logs</h2>
 
 <p>This is going to run the Sematext docker agent on each of the host nodes in the cluster. Once they start reporting back to Sematext you can view the results in the Sematext web ui.</p>

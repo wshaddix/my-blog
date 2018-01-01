@@ -16,16 +16,16 @@
 
   
   <meta name="author" content="Wes Shaddix" />
-  <meta name="description" content="Goal In a previous blog post I setup a docker swarm cluster. Now I want a way to visualize what the swarm cluster looks like. How many nodes I have and which containers are running. Also as I change the state of the swarm cluster through docker commands I&amp;rsquo;d like to visualize what is actually happening.
-The solution There is a docker image named dockersamples/visualizer that will give you a url that you can go to in order to view your swarm cluster." />
+  <meta name="description" content="[Updated] 12&amp;frasl;31 - Updated instructions to leverage the load balancer configuration that we added to the swarm cluster.
+Goal In a previous blog post I setup a docker swarm cluster. Now I want a way to visualize what the swarm cluster looks like. How many nodes I have and which containers are running. Also as I change the state of the swarm cluster through docker commands I&amp;rsquo;d like to visualize what is actually happening." />
 
   
   
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:site" content="@wshaddix" />
     <meta name="twitter:title" content="Visualizing a Docker Swarm Cluster" />
-    <meta name="twitter:description" content="Goal In a previous blog post I setup a docker swarm cluster. Now I want a way to visualize what the swarm cluster looks like. How many nodes I have and which containers are running. Also as I change the state of the swarm cluster through docker commands I&amp;rsquo;d like to visualize what is actually happening.
-The solution There is a docker image named dockersamples/visualizer that will give you a url that you can go to in order to view your swarm cluster." />
+    <meta name="twitter:description" content="[Updated] 12&amp;frasl;31 - Updated instructions to leverage the load balancer configuration that we added to the swarm cluster.
+Goal In a previous blog post I setup a docker swarm cluster. Now I want a way to visualize what the swarm cluster looks like. How many nodes I have and which containers are running. Also as I change the state of the swarm cluster through docker commands I&amp;rsquo;d like to visualize what is actually happening." />
     <meta name="twitter:image" content="http://www.wesshaddix.com/img/avatar.jpg" />
   
 
@@ -213,9 +213,11 @@ The solution There is a docker image named dockersamples/visualizer that will gi
   <section class="main post-detail">
     <header class="post-header">
       <h1 class="post-title">Visualizing a Docker Swarm Cluster</h1>
-      <p class="post-meta">@Wes Shaddix · Dec 8, 2017 · 2 min read</p>
+      <p class="post-meta">@Wes Shaddix · Dec 31, 2017 · 1 min read</p>
     </header>
     <article class="post-content">
+
+<p><strong>[Updated] <sup>12</sup>&frasl;<sub>31</sub> - Updated instructions to leverage the load balancer configuration that we added to the swarm cluster.</strong></p>
 
 <h1 id="goal">Goal</h1>
 
@@ -223,29 +225,21 @@ The solution There is a docker image named dockersamples/visualizer that will gi
 
 <h2 id="the-solution">The solution</h2>
 
-<p>There is a docker image named <code>dockersamples/visualizer</code> that will give you a url that you can go to in order to view your swarm cluster. We will run this as a serivce on our cluster and bind it to run on <strong>just the manager node</strong> and not on the workers.</p>
+<p>There is a docker image named <code>dockersamples/visualizer</code> that will give you a url that you can go to in order to view your swarm cluster. We will run this as a service on our cluster and bind it to run on <strong>just the manager node</strong> and not on the workers.</p>
 
-<h3 id="open-up-a-port-to-host-the-visualizer-website-on">Open up a port to host the visualizer website on</h3>
-
-<p>If you recall from the <a href="http://www.wesshaddix.com/post/three-node-docker-swarm-cluster/">previous blog post</a> we setup our network only allow ssh traffic on port 22. We need to allow an additional port so that we are able to get to the visualizer service once we install it. In order to do that run the following command.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell">az network nsg rule create -g docker-us-east --nsg-name nsg-docker-swarm -n allow-http-8080 --destination-port-ranges 8080 --access Allow --description <span style="color:#e6db74">&#34;Allow inbound http 8080 traffic&#34;</span> --priority 101</code></pre></div>
 <h3 id="install-the-visualizer-service">Install the visualizer service</h3>
 
-<p>Connect to your docker swarm manager node and setup a new service using the visualizer image.</p>
+<p>Connect to your docker swarm manager node and setup a new service using the visualizer image. We are going to expose the visualizer on port 80 which we already opened up in both the network security group and the load balancer from the previous post.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell">docker service create \
   --name=viz \
-  --publish=8080<span style="color:#960050;background-color:#1e0010">:</span>8080/tcp \
+  --publish=80<span style="color:#960050;background-color:#1e0010">:</span>8080/tcp \
   --constraint=node.role==manager \
   --mount=type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock \
   dockersamples/visualizer</code></pre></div>
 <h3 id="verify-that-it-works">Verify that it works</h3>
 
-<p>If you navigate to <a href="http://your-swarm-cluster:8080">http://your-swarm-cluster:8080</a> you will see what it looks like. Note that you can use either the manager or either of the worker&rsquo;s public ip addresses to reach the service. Docker swarm ensures that all services are available on all of the ip addresses.</p>
-
-<h2 id="cleaning-up">Cleaning up</h2>
-
-<p>As before, the following command from the azure cli will deprovision the entire swarm cluster and all it&rsquo;s resources so that you don&rsquo;t get charged for it.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell">az group delete -n docker-us-east</code></pre></div></article>
+<p>If you navigate to <a href="http://your-swarm-cluster">http://your-swarm-cluster</a> you will see what it looks like.</p>
+</article>
     <footer class="post-footer">
       
       <ul class="post-tags">

@@ -5,7 +5,7 @@
   <meta charset="utf-8" />
 
   
-  <title>Three Node Docker Swarm with Ubuntu Zesty 17.04 on Azure</title>
+  <title>Three Node Docker Swarm with Ubuntu 17.04 on Azure</title>
 
   
   
@@ -16,14 +16,16 @@
 
   
   <meta name="author" content="Wes Shaddix" />
-  <meta name="description" content="Overview I&amp;rsquo;m learning docker swarm mode and need a realistic simulation of setting up a multi-node cluster. Azure is an ideal platform to test things out. My goal is to create a docker swarm cluster within a single region. Creating a multi-region swarm cluster requires creating virutal networks in different regions and connecting those vnets through a vpn gateway which is not something I&amp;rsquo;m ready to tackle just yet." />
+  <meta name="description" content="[Updated] 12&amp;frasl;28 - Improved the setup so that we can use a load balancer in front of the swarm nodes as well as improve the availability of the swarm nodes
+Overview I&amp;rsquo;m learning docker swarm mode and need a realistic simulation of setting up a multi-node cluster. Azure is an ideal platform to test things out. My goal is to create a docker swarm cluster within a single region. Creating a multi-region swarm cluster requires creating virutal networks in different regions and connecting those vnets through a vpn gateway which is not something I&amp;rsquo;m ready to tackle just yet." />
 
   
   
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:site" content="@wshaddix" />
-    <meta name="twitter:title" content="Three Node Docker Swarm with Ubuntu Zesty 17.04 on Azure" />
-    <meta name="twitter:description" content="Overview I&amp;rsquo;m learning docker swarm mode and need a realistic simulation of setting up a multi-node cluster. Azure is an ideal platform to test things out. My goal is to create a docker swarm cluster within a single region. Creating a multi-region swarm cluster requires creating virutal networks in different regions and connecting those vnets through a vpn gateway which is not something I&amp;rsquo;m ready to tackle just yet." />
+    <meta name="twitter:title" content="Three Node Docker Swarm with Ubuntu 17.04 on Azure" />
+    <meta name="twitter:description" content="[Updated] 12&amp;frasl;28 - Improved the setup so that we can use a load balancer in front of the swarm nodes as well as improve the availability of the swarm nodes
+Overview I&amp;rsquo;m learning docker swarm mode and need a realistic simulation of setting up a multi-node cluster. Azure is an ideal platform to test things out. My goal is to create a docker swarm cluster within a single region. Creating a multi-region swarm cluster requires creating virutal networks in different regions and connecting those vnets through a vpn gateway which is not something I&amp;rsquo;m ready to tackle just yet." />
     <meta name="twitter:image" content="http://www.wesshaddix.com/img/avatar.jpg" />
   
 
@@ -210,10 +212,12 @@
 
   <section class="main post-detail">
     <header class="post-header">
-      <h1 class="post-title">Three Node Docker Swarm with Ubuntu Zesty 17.04 on Azure</h1>
-      <p class="post-meta">@Wes Shaddix · Dec 6, 2017 · 7 min read</p>
+      <h1 class="post-title">Three Node Docker Swarm with Ubuntu 17.04 on Azure</h1>
+      <p class="post-meta">@Wes Shaddix · Dec 28, 2017 · 11 min read</p>
     </header>
     <article class="post-content">
+
+<p><strong>[Updated] <sup>12</sup>&frasl;<sub>28</sub> - Improved the setup so that we can use a load balancer in front of the swarm nodes as well as improve the availability of the swarm nodes</strong></p>
 
 <h1 id="overview">Overview</h1>
 
@@ -223,13 +227,13 @@
 
 <p>I&rsquo;m running a windows 10 workstation with docker for windows.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell">λ ver
-Microsoft Windows <span style="color:#66d9ef">[Version 10.0.16299.98]</span>
+Microsoft Windows <span style="color:#66d9ef">[Version 10.0.16299.125]</span>
 
 λ docker --version
-Docker version 17.09.0-ce, build afdb6d4</code></pre></div>
-<h2 id="getting-the-azure-cli">Getting the azure cli</h2>
+Docker version 17.09.1-ce, build 19e2cf6</code></pre></div>
+<h2 id="getting-the-azure-cli-v2">Getting the azure cli v2</h2>
 
-<p>I know I want to use the Azure CLI v2 in order to be able to manage my azure resources from the command line but I don&rsquo;t want to have to install/configure it along with whatever programming languages it requires. Instead I just want to use it from a docker image (I already know this exists). In order to do that, I need to download and run it in a container so from my powershell terminal I run</p>
+<p>I know I want to use the Azure CLI v2 in order to be able to manage my azure resources from the command line but I don&rsquo;t want to have to install/configure it along with whatever programming languages it requires. Instead I just want to use it from a docker image. In order to do that, I need to download and run it in a container so from my <strong>powershell</strong> terminal I run</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell">docker run --rm -v ${HOME}<span style="color:#960050;background-color:#1e0010">:</span>/root -it azuresdk/azure-cli-python<span style="color:#960050;background-color:#1e0010">:</span>latest</code></pre></div>
 <p>This will run a container that has the azure cli ready to go. The <code>--rm</code> argument means that the container will be removed once I exit from it. The <code>-v ${HOME}:/root</code> argument maps my home directory on my Windows 10 host to the /root folder inside the docker container. This means anything written to the /root folder in the container will be saved on my host machine and be available the next time I run the container. Finally the <code>-it</code> argument will put me at the terminal of the container where I can interact with it.</p>
 
@@ -239,73 +243,144 @@ Docker version 17.09.0-ce, build afdb6d4</code></pre></div>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell">az login</code></pre></div>
 <p>When you run this command it will give you a url along with a code. Simply open the url in your web browser and paste in the code and it will authorize your Azure CLI to access your Azure account.</p>
 
-<h2 id="creating-a-resource-group">Creating a resource group</h2>
+<h2 id="the-script">The script</h2>
 
-<p>In order to be able to easily organize and later remove any and all resources that are related to my docker swarm I want to put everything in resource groups. Resource groups are bound to geographic locations so I will create one group that is close to my location. The location could be <a href="https://azure.microsoft.com/en-us/regions/">anywhere that Azure supports</a>.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell">az group create -l eastus -n docker-us-east</code></pre></div>
-<h2 id="creating-the-virtual-network">Creating the virtual network</h2>
+<p>I&rsquo;m going to show the entire script here that you can run from the azure cli for convenience. In the rest of this post I&rsquo;ll describe what each command does.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">RESOURCE_GROUP<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;dev-docker-swarm-us-east&#34;</span>
+VNET_NAME<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;vnet-docker-swarm&#34;</span>
+SUBNET_NAME<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;subnet-docker-swarm&#34;</span>
+NSG_NAME<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;nsg-docker-swarm&#34;</span>
+LOAD_BALANCER_NAME<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;load-balancer-swarm-cluster&#34;</span>
+OS_IMAGE<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;Canonical:UbuntuServer:17.04:17.04.201711210&#34;</span>
+VM_SIZE<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;Standard_B2S&#34;</span>
+ADMIN_USERNAME<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;wshaddix&#34;</span>
+AVAILABILITY_SET_NAME<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;availability-set-swarm-nodes&#34;</span>
 
-<p>Next up, we need a virtual network that the docker hosts can connect to in order to communicate with each other.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell">az network vnet create -g docker-us-east -n docker-swarm-vnet</code></pre></div>
-<h2 id="creating-the-network-security-group">Creating the network security group</h2>
+<span style="color:#75715e"># create a resource group
+</span><span style="color:#75715e"></span>az group create -l eastus -n $RESOURCE_GROUP
 
-<p>In order have the ability to manage what network traffic want to allow or deny on our new virtual network we will create a security group.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell">az network nsg create -g docker-us-east -n nsg-docker-swarm</code></pre></div>
-<h2 id="allowing-ssh-traffic-to-our-virtual-network">Allowing ssh traffic to our virtual network</h2>
+<span style="color:#75715e"># create a network security group
+</span><span style="color:#75715e"></span>az network nsg create -g $RESOURCE_GROUP -n $NSG_NAME
 
-<p>Now we want to allow public ssh traffic onto our virtual network so that we are able to ssh and manage the docker nodes that we&rsquo;ll provision later.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell">az network nsg rule create -g docker-us-east --nsg-name nsg-docker-swarm -n allow-ssh --destination-port-ranges 22 --access Allow --description <span style="color:#e6db74">&#34;Allow inbound ssh traffic&#34;</span> --priority 100</code></pre></div>
-<h2 id="creating-the-subnet">Creating the subnet</h2>
+<span style="color:#75715e"># create a virtual network
+</span><span style="color:#75715e"></span>az network vnet create -g $RESOURCE_GROUP -n $VNET_NAME
 
-<p>We need to create a subnet so that the docker nodes are able to communicate with each other. This subnet will also be protected by the <code>nsg-docker-swarm</code> network security group that we just created.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell">az network vnet subnet create -g docker-us-east --vnet-name docker-swarm-vnet -n docker-subnet --address-prefix 10.0.0.0/24 --network-security-group nsg-docker-swarm</code></pre></div>
-<h2 id="creating-the-public-static-ip-addresses">Creating the public static ip addresses</h2>
+<span style="color:#75715e"># create a subnet
+</span><span style="color:#75715e"></span>az network vnet subnet create -g $RESOURCE_GROUP -n $SUBNET_NAME --vnet-name $VNET_NAME --address-prefix <span style="color:#ae81ff">10</span>.0.0.0/24 --network-security-group $NSG_NAME
 
-<p>In order for us to be able to ssh to the docker nodes over the internet we need a public ip address that we can assign to the host virtal machines.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell">az network public-ip create -g docker-us-east -n docker-swarm-mgr-ip --allocation-method Static
+<span style="color:#75715e"># create a public ip address for the load balancer (front-end)
+</span><span style="color:#75715e"></span>az network public-ip create -g $RESOURCE_GROUP -n $LOAD_BALANCER_NAME-ip
 
-az network public-ip create -g docker-us-east -n docker-swarm-worker1-ip --allocation-method Static
+<span style="color:#75715e"># create a load balancer
+</span><span style="color:#75715e"></span>az network lb create -g $RESOURCE_GROUP -n $LOAD_BALANCER_NAME --public-ip-address $LOAD_BALANCER_NAME-ip --frontend-ip-name $LOAD_BALANCER_NAME-front-end --backend-pool-name $LOAD_BALANCER_NAME-back-end
 
-az network public-ip create -g docker-us-east -n docker-swarm-worker2-ip --allocation-method Static</code></pre></div>
-<p>The output of this command will tell you what ip addresses were allocated.</p>
+<span style="color:#75715e"># create a load balancer probe on port 80
+</span><span style="color:#75715e"></span>az network lb probe create -g $RESOURCE_GROUP -n load-balancer-health-probe-80 --lb-name $LOAD_BALANCER_NAME --protocol tcp --port <span style="color:#ae81ff">80</span>
 
-<h2 id="creating-the-nics-for-the-public-connections-of-the-docker-nodes">Creating the NICs for the public connections of the docker nodes</h2>
+<span style="color:#75715e"># create a load balancer traffic rule for port 80
+</span><span style="color:#75715e"></span>az network lb rule create -g $RESOURCE_GROUP -n load-balancer-traffic-rule-80 --lb-name $LOAD_BALANCER_NAME --protocol tcp --frontend-port <span style="color:#ae81ff">80</span> --backend-port <span style="color:#ae81ff">80</span> --frontend-ip-name $LOAD_BALANCER_NAME-front-end  --backend-pool-name $LOAD_BALANCER_NAME-back-end --probe-name load-balancer-health-probe-80
 
-<p>The virtual machines will need to have a NIC for the public ip address that we created in the previous step.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell">az network nic create -g docker-us-east -n docker-swarm-mgr-public-nic --vnet-name docker-swarm-vnet --subnet docker-subnet --public-ip-address docker-swarm-mgr-ip
+<span style="color:#75715e"># create three NAT rules for port 22 (so we can ssh to each of the three nodes via the load balancer&#39;s public ip address)
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">for</span> i in <span style="color:#e6db74">`</span>seq <span style="color:#ae81ff">1</span> <span style="color:#ae81ff">3</span><span style="color:#e6db74">`</span>; <span style="color:#66d9ef">do</span>
+  az network lb inbound-nat-rule create -g $RESOURCE_GROUP -n nat-rule-for-node-$i-ssh --lb-name $LOAD_BALANCER_NAME --protocol tcp --frontend-port <span style="color:#ae81ff">422</span>$i --backend-port <span style="color:#ae81ff">22</span> --frontend-ip-name $LOAD_BALANCER_NAME-front-end
+<span style="color:#66d9ef">done</span>
 
-az network nic create -g docker-us-east -n docker-swarm-worker1-public-nic --vnet-name docker-swarm-vnet --subnet docker-subnet --public-ip-address
-docker-swarm-worker1-ip
+<span style="color:#75715e"># allow port 22 (ssh) traffic into the network
+</span><span style="color:#75715e"></span>az network nsg rule create -g $RESOURCE_GROUP -n allow-ssh --nsg-name $NSG_NAME --destination-port-ranges <span style="color:#ae81ff">22</span> --access Allow --description <span style="color:#e6db74">&#34;Allow inbound ssh traffic&#34;</span> --priority <span style="color:#ae81ff">100</span>
 
-az network nic create -g docker-us-east -n docker-swarm-worker2-public-nic --vnet-name docker-swarm-vnet --subnet docker-subnet --public-ip-address docker-swarm-worker2-ip</code></pre></div>
+<span style="color:#75715e"># allow port 80 (http) traffic into the network
+</span><span style="color:#75715e"></span>az network nsg rule create -g $RESOURCE_GROUP -n allow-http --nsg-name $NSG_NAME --destination-port-ranges <span style="color:#ae81ff">80</span> --access Allow --description <span style="color:#e6db74">&#34;Allow inbound http traffic&#34;</span> --priority <span style="color:#ae81ff">200</span>
+
+<span style="color:#75715e"># create three virtual network cards and associate with the network security group and load balancer. bind each NIC to one of the ssh nat rules we created
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">for</span> i in <span style="color:#e6db74">`</span>seq <span style="color:#ae81ff">1</span> <span style="color:#ae81ff">3</span><span style="color:#e6db74">`</span>; <span style="color:#66d9ef">do</span>
+  az network nic create -g $RESOURCE_GROUP -n node-$i-private-nic --vnet-name $VNET_NAME --subnet $SUBNET_NAME --lb-name $LOAD_BALANCER_NAME --lb-address-pools $LOAD_BALANCER_NAME-back-end --lb-inbound-nat-rules nat-rule-for-node-$i-ssh
+<span style="color:#66d9ef">done</span>
+
+<span style="color:#75715e"># create an availability set with 3 fault domains and 3 update domains
+</span><span style="color:#75715e"></span>az vm availability-set create -g $RESOURCE_GROUP -n $AVAILABILITY_SET_NAME --platform-fault-domain-count <span style="color:#ae81ff">3</span> --platform-update-domain-count <span style="color:#ae81ff">3</span>
+
+<span style="color:#75715e"># generate ssh keys
+</span><span style="color:#75715e"></span>ssh-keygen -t rsa -f ~/.ssh/docker_rsa -N <span style="color:#e6db74">&#34;&#34;</span>
+
+<span style="color:#75715e"># create three virtual machines
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">for</span> i in <span style="color:#e6db74">`</span>seq <span style="color:#ae81ff">1</span> <span style="color:#ae81ff">3</span><span style="color:#e6db74">`</span>; <span style="color:#66d9ef">do</span>
+  az vm create -g $RESOURCE_GROUP -n node-$i --ssh-key-value <span style="color:#e6db74">&#34;~/.ssh/docker_rsa.pub&#34;</span> --nics node-$i-private-nic --image $OS_IMAGE --size $VM_SIZE --authentication-type ssh --admin-username $ADMIN_USERNAME --availability-set $AVAILABILITY_SET_NAME --os-disk-name node-$i-os-disk
+<span style="color:#66d9ef">done</span></code></pre></div>
+<h2 id="create-a-resource-group">Create a resource group</h2>
+
+<p>In order to be able to easily organize and later remove any and all resources that are related to the docker swarm cluster I put everything in a resource group. Resource groups are bound to geographic locations so I created one that is close to my location. The location could be <a href="https://azure.microsoft.com/en-us/regions/">anywhere that Azure supports</a>.</p>
+
+<h2 id="create-a-network-security-group">Create a network security group</h2>
+
+<p>We want to protect our network traffic with a firewall so we create a new network security group next. We need the network security group to exist before we create our virtual network and subnet so that we can associate the subnet to the network security group. That way, any rules that we create in the firewall will apply to everything connected to the subnet. This way we don&rsquo;t have to manage rules for each individual NIC that gets attached to the subnet but instead we can manage the subnet as a whole.</p>
+
+<h2 id="create-a-virtual-network">Create a virtual network</h2>
+
+<p>We start off by creating a network that each of the swarm nodes will connect to. We also create a subnet within the network to isolate traffic between the nodes.</p>
+
+<h2 id="create-a-subnet">Create a subnet</h2>
+
+<p>We create a subnet within the virtual network and associate it to the network security group that we created previously. Any rules that we create later on for the firewall will apply to everything in this subnet.</p>
+
+<h2 id="create-a-public-ip-address-for-the-load-balancer-front-end">Create a public ip address for the load balancer (front-end)</h2>
+
+<p>Now that we have a network setup we&rsquo;ll start creating a load balancer that will balance traffic between each node in the swarm cluster. There will only be one public ip to the swarm cluster and that will be the ip address of the load balancer.</p>
+
+<h2 id="create-a-load-balancer">Create a load balancer</h2>
+
+<p>Next we create a load balancer and associate it with the public ip address that we just created. The load balancer has a front-end ip and a back-end ip address pool that it balances traffic between.</p>
+
+<h2 id="create-a-load-balancer-probe-on-port-80">Create a load balancer probe on port 80</h2>
+
+<p>The load balancer has to have a way to detect if the nodes are healthy that it sends traffic to. We create a probe that will connect with each node using tcp port 80 traffic. If the node responds then the load balancer knows that the node is ready to receive traffic.</p>
+
+<h2 id="create-a-load-balancer-traffic-rule-for-port-80">Create a load balancer traffic rule for port 80</h2>
+
+<p>With the health probe in place, next we setup a traffic rule in the load balancer to forward tcp port 80 traffic to the nodes that are in the back-end pool. We associate this traffic rule with the health probe that we created.</p>
+
+<h2 id="create-three-nat-rules-for-port-22-so-we-can-ssh-to-each-of-the-three-nodes-via-the-load-balancer-s-public-ip-address">Create three NAT rules for port 22 (so we can ssh to each of the three nodes via the load balancer&rsquo;s public ip address)</h2>
+
+<p>To finish out the load balancer setup we need to create NAT rules that will allow us to reach each individual node in the cluster when we need to manage it via ssh. In order to do this, we setup rules that will route tcp port 4221, 4222 and 4223 traffic to port 22 (the ssh port) in the back-end pool. The key thing is that we name each NAT rule with a unique name that we will later use to bind to the NICs of the swarm nodes. This is what will allow us to ssh to port 4221, 4222 and 4223 and connect to node 1, node 2 and node 3 behind the load balancer.</p>
+
+<h2 id="allow-port-22-ssh-traffic-into-the-network">Allow port 22 (ssh) traffic into the network</h2>
+
+<p>In order to get tcp port 22 traffic into the network we have to allow for it in the firewall (network security group or NSG).</p>
+
+<h2 id="allow-port-80-http-traffic-into-the-network">Allow port 80 (http) traffic into the network</h2>
+
+<p>Just like port 22 ssh traffic above, we also have to let tcp port 80 traffic into the network.</p>
+
+<h2 id="create-three-virtual-network-cards">Create three virtual network cards</h2>
+
+<p>In order to connect the swarm nodes together we have to create a NIC for them and associate the NICs with the subnet that we previously setup. We give each NIC a unique name, we place it into the load balancer&rsquo;s back-end pool and we also associate the NIC with the uniquely named inbound NAT rule that we setup in order to allow us to reach the node via the load balancer for ssh traffic.</p>
+
+<h2 id="create-an-availability-set-with-3-fault-domains-and-3-update-domains">Create an availability set with 3 fault domains and 3 update domains</h2>
+
+<p>The virtual machines that we setup as swarm nodes must all be in the same availability set in order for the load balancer to be able to route traffic to them. You can read more about availability sets <a href="https://docs.microsoft.com/en-us/azure/virtual-machines/linux/manage-availability?toc=%2fazure%2fvirtual-machines%2flinux%2ftoc.json">here</a> but in essence, what an availability set does is gives you a way to ensure that not all of your vm nodes will be rebooted at the same time (update domains) and provisions them across different physical hardware (fault domains) in order to increase their availability and up-time. In a future post I&rsquo;d like to explore using the new preview feature of <a href="https://docs.microsoft.com/en-us/azure/availability-zones/az-overview">Availability Zones</a> to further improve the fault tolerance of the swarm cluster.</p>
+
 <h2 id="generate-ssh-keys">Generate ssh keys</h2>
 
-<p>We want to generate an ssh keypair so that we can access the docker nodes after we provision them</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell">ssh-keygen -t rsa <span style="color:#f92672">-f</span> ~/.ssh/docker_rsa -N <span style="color:#e6db74">&#34;&#34;</span></code></pre></div>
-<h2 id="create-the-docker-swarm-manager">Create the docker swarm manager</h2>
+<p>In order to manage the virtual machines we generate an ssh keypair so that each vm can be managed by the same ssh key for ease of administration.</p>
 
-<p>We&rsquo;ll create an Ubuntu 17.04 VM and attach the public and private NICs that we just created. This will join it to the subnet that we created.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell">az vm create -g docker-us-east -n docker-swarm-mgr --ssh-key-value <span style="color:#e6db74">&#34;~/.ssh/docker_rsa.pub&#34;</span> --nics docker-swarm-mgr-public-nic --image Canonical<span style="color:#960050;background-color:#1e0010">:</span>UbuntuServer<span style="color:#960050;background-color:#1e0010">:</span>17.04<span style="color:#960050;background-color:#1e0010">:</span>17.04.201711210 --size Standard_B2S --authentication-type ssh --admin-username wshaddix --os-disk-name docker-swarm-mgr-os-disk</code></pre></div>
-<h2 id="verify-ssh-access-to-the-docker-swarm-manager">Verify ssh access to the docker swarm manager</h2>
+<h2 id="create-three-virtual-machines">Create three virtual machines</h2>
 
-<p>Once the swarm manager vm is provisioned, ensure that things are setup correctly by starting an ssh connection with the vm.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell">ssh -i c<span style="color:#960050;background-color:#1e0010">:</span>\Users\wessh\.ssh\docker_rsa wshaddix@&lt;mgr public ip address&gt;</code></pre></div>
-<h2 id="create-the-first-docker-swarm-worker">Create the first docker swarm worker</h2>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell">az vm create -g docker-us-east -n docker-swarm-worker1 --ssh-key-value <span style="color:#e6db74">&#34;~/.ssh/docker_rsa.pub&#34;</span> --nics docker-swarm-worker1-public-nic --image Canonical<span style="color:#960050;background-color:#1e0010">:</span>UbuntuServer<span style="color:#960050;background-color:#1e0010">:</span>17.04<span style="color:#960050;background-color:#1e0010">:</span>17.04.201711210 --size Standard_B2S --authentication-type ssh --admin-username wshaddix --os-disk-name docker-swarm-worker1-os-disk</code></pre></div>
-<h2 id="verify-ssh-access-to-the-first-docker-swarm-worker">Verify ssh access to the first docker swarm worker</h2>
+<p>Finally we can provision the virtual machines. For each VM we give it a unique name that aligns with the name of it&rsquo;s NIC and OS disk. We place it in the availability set that we created and associate it with the public key of the ssh key pair that we generated previously.</p>
 
-<p>Once the swarm manager vm is provisioned, ensure that things are setup correctly by starting an ssh connection with the vm.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell">ssh -i c<span style="color:#960050;background-color:#1e0010">:</span>\Users\wessh\.ssh\docker_rsa wshaddix@&lt;worker1 public ip address&gt;</code></pre></div>
-<h2 id="create-the-second-docker-swarm-worker">Create the second docker swarm worker</h2>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell">az vm create -g docker-us-east -n docker-swarm-worker2 --ssh-key-value <span style="color:#e6db74">&#34;~/.ssh/docker_rsa.pub&#34;</span> --nics docker-swarm-worker2-public-nic --image Canonical<span style="color:#960050;background-color:#1e0010">:</span>UbuntuServer<span style="color:#960050;background-color:#1e0010">:</span>17.04<span style="color:#960050;background-color:#1e0010">:</span>17.04.201711210 --size Standard_B2S --authentication-type ssh --admin-username wshaddix --os-disk-name docker-swarm-worker2-os-disk</code></pre></div>
-<h2 id="verify-ssh-access-to-the-second-docker-swarm-worker">Verify ssh access to the second docker swarm worker</h2>
-
-<p>Once the swarm manager vm is provisioned, ensure that things are setup correctly by starting an ssh connection with the vm.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell">ssh -i c<span style="color:#960050;background-color:#1e0010">:</span>\Users\wessh\.ssh\docker_rsa wshaddix@&lt;worker2 public ip address&gt;</code></pre></div>
 <h2 id="install-docker-on-all-three-nodes">Install docker on all three nodes</h2>
 
 <p><strong>On all three nodes</strong> you have to install docker. Repeat these commands on each node via an ssh session.</p>
 
+<h3 id="ssh-to-the-specific-node">SSH to the specific node</h3>
+
+<p>In order to reach each individual node via the load balancer you have to ssh to the correct port based on how we setup the NAT rules earlier.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell"><span style="color:#75715e"># node 1</span>
+ssh -i ~/.ssh/docker_rsa wshaddix@&lt;load balancer ip address&gt; -p 4221
+
+<span style="color:#75715e"># node 2</span>
+ssh -i ~/.ssh/docker_rsa wshaddix@&lt;load balancer ip address&gt; -p 4222
+
+<span style="color:#75715e"># node 3</span>
+ssh -i ~/.ssh/docker_rsa wshaddix@&lt;load balancer ip address&gt; -p 4223</code></pre></div>
 <h3 id="setup-the-docker-apt-repository">Setup the docker apt repository</h3>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell">sudo apt-get update
 
@@ -324,7 +399,7 @@ sudo add-apt-repository \
 <h3 id="install-docker-ce">Install Docker CE</h3>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell">sudo apt-get update
 
-sudo apt-get install docker-ce</code></pre></div>
+sudo apt-get install docker-ce=17.09.1~ce-0~ubuntu</code></pre></div>
 <h3 id="verify-that-docker-is-working-correctly">Verify that docker is working correctly</h3>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell">sudo docker run hello-world</code></pre></div>
 <h3 id="manage-docker-as-a-non-root-user">Manage docker as a non-root user</h3>
@@ -343,7 +418,7 @@ sudo apt-get install docker-ce</code></pre></div>
 <h2 id="add-the-worker-nodes-to-the-cluster">Add the worker nodes to the cluster</h2>
 
 <p>On the worker nodes run the command (my example is below) indicated when you initialized the swarm cluster from the previous step.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell">docker swarm join --token SWMTKN-1-490uiqnix2tsuknaj1g4nz95c9rw3ckuwmaafdpy4h59cnyu7a-21hx4q1v6i4i76lrndhssdcr5 10.0.0.4<span style="color:#960050;background-color:#1e0010">:</span>2377</code></pre></div>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell">docker swarm join --token &lt;your swarm cluster<span style="color:#960050;background-color:#1e0010">&#39;</span>s join token&gt; 10.0.0.4<span style="color:#960050;background-color:#1e0010">:</span>2377</code></pre></div>
 <h2 id="verify-the-swarm-cluster-is-up">Verify the swarm cluster is up</h2>
 
 <p>On the manager node run the following command to ensure that the swarm is running with three nodes.</p>
@@ -351,7 +426,7 @@ sudo apt-get install docker-ce</code></pre></div>
 <h2 id="cleaning-up">Cleaning up</h2>
 
 <p>After you are done and ready to deprovision all of the resources that we&rsquo;ve created so that you are not billed for them, you can simply delete the resource group.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell">az group delete -n docker-us-east</code></pre></div>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell">az group delete -n dev-docker-swarm-us-east</code></pre></div>
 <p>You also may want to delete your docker_rsa ssh keypair if you are going to re-run these steps in the future.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell">rm ~/.ssh/docker_rsa*</code></pre></div>
 <p>You may (or may not) also want to remove the three nodes from your <code>~/.ssh/known_hosts</code> file</p>
@@ -363,13 +438,13 @@ sudo apt-get install docker-ce</code></pre></div>
 <h3 id="create-the-entire-three-node-swarm-cluster-on-azure">Create the entire three node swarm cluster on Azure</h3>
 
 <p>After you&rsquo;ve logged into your Azure account you can run</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell">wget -O - https<span style="color:#960050;background-color:#1e0010">:</span>//gist.githubusercontent.com/wshaddix/3acf084908f31d7c18f1f20f53b19147/raw/d52485a4e9e54576323a96630db0e7baf6dc8c12/Setting<span style="color:#66d9ef">%</span>2520up<span style="color:#66d9ef">%</span>2520docker<span style="color:#66d9ef">%</span>2520swarm<span style="color:#66d9ef">%</span>2520on<span style="color:#66d9ef">%</span>2520azure | bash</code></pre></div>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell">wget -O - https<span style="color:#960050;background-color:#1e0010">:</span>//gist.githubusercontent.com/wshaddix/3acf084908f31d7c18f1f20f53b19147/raw/bf4ea5aa97a92020be50cd1c0cc2f7c7a6b65fbc/Setting<span style="color:#66d9ef">%</span>2520up<span style="color:#66d9ef">%</span>2520docker<span style="color:#66d9ef">%</span>2520swarm<span style="color:#66d9ef">%</span>2520on<span style="color:#66d9ef">%</span>2520azure | bash</code></pre></div>
 <p>This will setup the three virtual machines.</p>
 
 <h3 id="install-docker">Install Docker</h3>
 
 <p>Next, you can ssh into each of the three nodes and run</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell">wget -O - https<span style="color:#960050;background-color:#1e0010">:</span>//gist.githubusercontent.com/wshaddix/91058d471c525050f005e98eda85e3d3/raw/e25b03b180e456f1e9dd27bba7cea13823992b98/Install<span style="color:#66d9ef">%</span>2520Docker<span style="color:#66d9ef">%</span>2520on<span style="color:#66d9ef">%</span>2520Ubuntu<span style="color:#66d9ef">%</span>252017.04 | bash</code></pre></div>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell">wget -O - https<span style="color:#960050;background-color:#1e0010">:</span>//gist.githubusercontent.com/wshaddix/91058d471c525050f005e98eda85e3d3/raw/46de5d48bd4c4e51a9701e743c85fbf4dc3a3ce4/Install<span style="color:#66d9ef">%</span>2520Docker<span style="color:#66d9ef">%</span>2520on<span style="color:#66d9ef">%</span>2520Ubuntu<span style="color:#66d9ef">%</span>252017.04 | bash</code></pre></div>
 <h3 id="initialize-swarm-mode">Initialize swarm mode</h3>
 
 <p>Now you&rsquo;ve got your virtual machines provisioned and docker installed you can just run the commands listed above to initialize the swarm and join the worker nodes.</p>
