@@ -269,7 +269,7 @@ AVAILABILITY_SET_NAME<span style="color:#f92672">=</span><span style="color:#e6d
 </span><span style="color:#75715e"></span>az network vnet subnet create -g $RESOURCE_GROUP -n $SUBNET_NAME --vnet-name $VNET_NAME --address-prefix <span style="color:#ae81ff">10</span>.0.0.0/24 --network-security-group $NSG_NAME
 
 <span style="color:#75715e"># create a public ip address for the load balancer (front-end)
-</span><span style="color:#75715e"></span>az network public-ip create -g $RESOURCE_GROUP -n $LOAD_BALANCER_NAME-ip
+</span><span style="color:#75715e"></span>az network public-ip create -g $RESOURCE_GROUP -n $LOAD_BALANCER_NAME-ip --allocation-method Static
 
 <span style="color:#75715e"># create a load balancer
 </span><span style="color:#75715e"></span>az network lb create -g $RESOURCE_GROUP -n $LOAD_BALANCER_NAME --public-ip-address $LOAD_BALANCER_NAME-ip --frontend-ip-name $LOAD_BALANCER_NAME-front-end --backend-pool-name $LOAD_BALANCER_NAME-back-end
@@ -460,7 +460,7 @@ sudo apt-get install docker-ce=17.09.1~ce-0~ubuntu</code></pre></div>
       </ul>
       
       <p class="post-copyright">
-        © This post is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License. Please give a reference to this source if you would like to quote or reproduce.
+        © This post is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License. Please give a reference to this source if you would like to quote or reproduce. This post was published <strong>123</strong> days ago. Content in the post may be inaccurate or wrong now.
       </p>
     </footer>
     
@@ -488,7 +488,7 @@ sudo apt-get install docker-ce=17.09.1~ce-0~ubuntu</code></pre></div>
     
   </section>
   <footer class="site-footer">
-  <p>© 2017 Wes Shaddix</p>
+  <p>© 2017-2018 Wes Shaddix</p>
   <p>Powered by <a href="https://gohugo.io/" target="_blank">Hugo</a> with theme <a href="https://github.com/laozhu/hugo-nuo" target="_blank">Nuo</a>.</p>
   
 </footer>

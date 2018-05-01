@@ -72,7 +72,7 @@ az network vnet create -g $RESOURCE_GROUP -n $VNET_NAME
 az network vnet subnet create -g $RESOURCE_GROUP -n $SUBNET_NAME --vnet-name $VNET_NAME --address-prefix 10.0.0.0/24 --network-security-group $NSG_NAME
 
 # create a public ip address for the load balancer (front-end)
-az network public-ip create -g $RESOURCE_GROUP -n $LOAD_BALANCER_NAME-ip
+az network public-ip create -g $RESOURCE_GROUP -n $LOAD_BALANCER_NAME-ip --allocation-method Static
 
 # create a load balancer
 az network lb create -g $RESOURCE_GROUP -n $LOAD_BALANCER_NAME --public-ip-address $LOAD_BALANCER_NAME-ip --frontend-ip-name $LOAD_BALANCER_NAME-front-end --backend-pool-name $LOAD_BALANCER_NAME-back-end
