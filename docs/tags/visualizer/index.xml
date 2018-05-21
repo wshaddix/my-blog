@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Visualizer on Wes Shaddix | Blog</title>
+    <link>http://www.wesshaddix.com/tags/visualizer/</link>
+    <description>Recent content in Visualizer on Wes Shaddix | Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Sun, 31 Dec 2017 18:49:43 -0500</lastBuildDate>
+    
+	<atom:link href="http://www.wesshaddix.com/tags/visualizer/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Visualizing a Docker Swarm Cluster</title>
+      <link>http://www.wesshaddix.com/post/visualizing-a-docker-swarm-cluster/</link>
+      <pubDate>Sun, 31 Dec 2017 18:49:43 -0500</pubDate>
+      
+      <guid>http://www.wesshaddix.com/post/visualizing-a-docker-swarm-cluster/</guid>
+      <description>[Updated] 12&amp;frasl;31 - Updated instructions to leverage the load balancer configuration that we added to the swarm cluster.
+Goal In a previous blog post I setup a docker swarm cluster. Now I want a way to visualize what the swarm cluster looks like. How many nodes I have and which containers are running. Also as I change the state of the swarm cluster through docker commands I&amp;rsquo;d like to visualize what is actually happening.</description>
+    </item>
+    
+  </channel>
+</rss>

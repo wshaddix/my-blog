@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Continuous Integration on Wes Shaddix | Blog</title>
+    <link>http://www.wesshaddix.com/categories/continuous-integration/</link>
+    <description>Recent content in Continuous Integration on Wes Shaddix | Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Tue, 15 Aug 2017 21:43:19 -0400</lastBuildDate>
+    
+	<atom:link href="http://www.wesshaddix.com/categories/continuous-integration/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Showing UTF8 Characters in TeamCity 10 Build Logs</title>
+      <link>http://www.wesshaddix.com/post/team-city-utf-8/</link>
+      <pubDate>Tue, 15 Aug 2017 21:43:19 -0400</pubDate>
+      
+      <guid>http://www.wesshaddix.com/post/team-city-utf-8/</guid>
+      <description>As part of a continuous integration pipeline I&amp;rsquo;m running my Postman api tests after every deployment to our development environment via TeamCity and Newman. One issue that I encountered was that the TeamCity agent build log wasn&amp;rsquo;t showing formatted newman output correctly because by default it doesn&amp;rsquo;t show UTF8. In order to fix this you just have to update your C:\TeamCity\buildAgent\conf\buildAgent.properties file to include
+1  teamcity.runner.commandline.stdstreams.encoding=UTF-8   and then restart the TeamCity Agent service.</description>
+    </item>
+    
+  </channel>
+</rss>

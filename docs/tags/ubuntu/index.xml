@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Ubuntu on Wes Shaddix | Blog</title>
+    <link>http://www.wesshaddix.com/tags/ubuntu/</link>
+    <description>Recent content in Ubuntu on Wes Shaddix | Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Mon, 21 May 2018 09:53:37 -0400</lastBuildDate>
+    
+	<atom:link href="http://www.wesshaddix.com/tags/ubuntu/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Upgrading Ubuntu on Docker Swarm Node</title>
+      <link>http://www.wesshaddix.com/post/upgrading-ubuntu-on-docker-swarm-node/</link>
+      <pubDate>Mon, 21 May 2018 09:53:37 -0400</pubDate>
+      
+      <guid>http://www.wesshaddix.com/post/upgrading-ubuntu-on-docker-swarm-node/</guid>
+      <description>&lt;p&gt;In this post I&amp;rsquo;m going to document the steps needed to upgrade the OS of docker swarm nodes from Ubuntu 17.10 to Ubuntu 18.04
+&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

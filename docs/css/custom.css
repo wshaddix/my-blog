@@ -1,0 +1,14 @@
+@import url('https://fonts.googleapis.com/css?family=Kavivanar');
+
+.container {
+	width: auto;
+}
+
+.header .logo-wrapper .logo {
+	font-size: 36px;
+	font-family: Kavivanar, cursive;
+}
+
+.bg-llight {
+	background-color: #95959b;
+}

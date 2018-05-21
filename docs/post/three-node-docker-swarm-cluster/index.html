@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en" itemscope itemtype="http://schema.org/WebPage">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>Three Node Docker Swarm with Ubuntu 17.04 on Azure - Wes Shaddix | Blog</title>
+  <link rel="alternate" hreflang="en" href="http://www.wesshaddix.com/" />
+
+<meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta name="MobileOptimized" content="width"/>
+<meta name="HandheldFriendly" content="true"/>
+
+
+<meta name="applicable-device" content="pc,mobile">
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+<meta name="mobile-web-app-capable" content="yes">
+
+<meta name="author" content="Wes Shaddix" />
+  <meta name="description" content="[Updated] 12&amp;frasl;28 - Improved the setup so that we can use a load balancer in front of the swarm nodes as well as improve the availability of the swarm nodes
+Overview I&amp;rsquo;m learning docker swarm mode and need a realistic simulation of setting up a multi-node cluster. Azure is an ideal platform to test things out. My goal is to create a docker swarm cluster within a single region. Creating a multi-region swarm cluster requires creating virutal networks in different regions and connecting those vnets through a vpn gateway which is not something I&amp;rsquo;m ready to tackle just yet." />
+
+  <meta name="keywords" content="Wes, Wes Shaddix" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.40.3" />
+
+
+<link rel="canonical" href="http://www.wesshaddix.com/post/three-node-docker-swarm-cluster/" />
+
+
+
+<link rel="icon" href="/favicon.ico" />
+
+
+
+
+
+
+
+
+
+
+<link href="/dist/jane.min.css?v=2.7.0" rel="stylesheet">
+
+
+
+<link rel="stylesheet" href="/css/custom.css">
+
+
+<meta property="og:title" content="Three Node Docker Swarm with Ubuntu 17.04 on Azure" />
+<meta property="og:description" content="[Updated] 12&frasl;28 - Improved the setup so that we can use a load balancer in front of the swarm nodes as well as improve the availability of the swarm nodes
+Overview I&rsquo;m learning docker swarm mode and need a realistic simulation of setting up a multi-node cluster. Azure is an ideal platform to test things out. My goal is to create a docker swarm cluster within a single region. Creating a multi-region swarm cluster requires creating virutal networks in different regions and connecting those vnets through a vpn gateway which is not something I&rsquo;m ready to tackle just yet." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://www.wesshaddix.com/post/three-node-docker-swarm-cluster/" />
+
+
+
+<meta property="article:published_time" content="2017-12-28T17:31:03-05:00"/>
+
+<meta property="article:modified_time" content="2017-12-28T17:31:03-05:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta itemprop="name" content="Three Node Docker Swarm with Ubuntu 17.04 on Azure">
+<meta itemprop="description" content="[Updated] 12&frasl;28 - Improved the setup so that we can use a load balancer in front of the swarm nodes as well as improve the availability of the swarm nodes
+Overview I&rsquo;m learning docker swarm mode and need a realistic simulation of setting up a multi-node cluster. Azure is an ideal platform to test things out. My goal is to create a docker swarm cluster within a single region. Creating a multi-region swarm cluster requires creating virutal networks in different regions and connecting those vnets through a vpn gateway which is not something I&rsquo;m ready to tackle just yet.">
+
+
+<meta itemprop="datePublished" content="2017-12-28T17:31:03-05:00" />
+<meta itemprop="dateModified" content="2017-12-28T17:31:03-05:00" />
+<meta itemprop="wordCount" content="2384">
+
+
+
+<meta itemprop="keywords" content="docker,docker-swarm," />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Three Node Docker Swarm with Ubuntu 17.04 on Azure"/>
+<meta name="twitter:description" content="[Updated] 12&frasl;28 - Improved the setup so that we can use a load balancer in front of the swarm nodes as well as improve the availability of the swarm nodes
+Overview I&rsquo;m learning docker swarm mode and need a realistic simulation of setting up a multi-node cluster. Azure is an ideal platform to test things out. My goal is to create a docker swarm cluster within a single region. Creating a multi-region swarm cluster requires creating virutal networks in different regions and connecting those vnets through a vpn gateway which is not something I&rsquo;m ready to tackle just yet."/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-587905-4', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src='//www.google-analytics.com/analytics.js'></script>
+
+
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">Wes&#39;s Blog</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <li class="mobile-menu-item">
+        <a href="/">
+          Home
+        </a>
+      </li><li class="mobile-menu-item">
+        <a href="/post/">
+          Archives
+        </a>
+      </li><li class="mobile-menu-item">
+        <a href="/tags/">
+          Tags
+        </a>
+      </li><li class="mobile-menu-item">
+        <a href="/categories/">
+          Categories
+        </a>
+      </li><li class="mobile-menu-item">
+        <a href="https://github.com/wshaddix">
+          My GitHub
+        </a>
+      </li>
+  </ul>
+</nav>
+
+  
+    
+
+
+
+
+
+
+  <link rel="stylesheet" href="/lib/photoswipe/photoswipe.min.css" />
+  <link rel="stylesheet" href="/lib/photoswipe/default-skin/default-skin.min.css" />
+
+
+
+
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+<div class="pswp__bg"></div>
+
+<div class="pswp__scroll-wrap">
+    
+    <div class="pswp__container">
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+    </div>
+    
+    <div class="pswp__ui pswp__ui--hidden">
+    <div class="pswp__top-bar">
+      
+      <div class="pswp__counter"></div>
+      <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+      <button class="pswp__button pswp__button--share" title="Share"></button>
+      <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+      <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+      
+      
+      <div class="pswp__preloader">
+        <div class="pswp__preloader__icn">
+          <div class="pswp__preloader__cut">
+            <div class="pswp__preloader__donut"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+      <div class="pswp__share-tooltip"></div>
+    </div>
+    <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+    </button>
+    <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+    </button>
+    <div class="pswp__caption">
+      <div class="pswp__caption__center"></div>
+    </div>
+    </div>
+    </div>
+</div>
+
+  
+  <header id="header" class="header container">
+    <div class="logo-wrapper">
+  <a href="/" class="logo">
+    
+      Wes's Blog
+    
+  </a>
+</div>
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    
+      <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="http://www.wesshaddix.com/">Home</a>
+          
+
+        
+
+      </li>
+    
+      <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="http://www.wesshaddix.com/post/">Archives</a>
+          
+
+        
+
+      </li>
+    
+      <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="http://www.wesshaddix.com/tags/">Tags</a>
+          
+
+        
+
+      </li>
+    
+      <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="http://www.wesshaddix.com/categories/">Categories</a>
+          
+
+        
+
+      </li>
+    
+      <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://github.com/wshaddix" rel="noopener" target="_blank">
+              My GitHub
+            <i class="iconfont icon-new-window"></i>
+            </a>
+          
+
+        
+
+      </li>
+    
+  </ul>
+</nav>
+
+  </header>
+
+  <div id="mobile-panel">
+    <main id="main" class="main bg-llight">
+      <div class="content-wrapper">
+        <div id="content" class="content container">
+          <article class="post bg-white">
+    
+    <header class="post-header">
+      <h1 class="post-title">Three Node Docker Swarm with Ubuntu 17.04 on Azure</h1>
+      
+      <div class="post-meta">
+        <span class="post-time"> 2017-12-28 </span>
+        
+        <span class="more-meta"> 2384 words </span>
+        <span class="more-meta"> 12 min read </span>
+      </div>
+    </header>
+
+    
+    
+<div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">Table of Contents</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+<ul>
+<li><a href="#overview">Overview</a>
+<ul>
+<li><a href="#my-setup">My setup</a></li>
+<li><a href="#getting-the-azure-cli-v2">Getting the azure cli v2</a></li>
+<li><a href="#logging-into-my-azure-account">Logging into my azure account</a></li>
+<li><a href="#the-script">The script</a></li>
+<li><a href="#create-a-resource-group">Create a resource group</a></li>
+<li><a href="#create-a-network-security-group">Create a network security group</a></li>
+<li><a href="#create-a-virtual-network">Create a virtual network</a></li>
+<li><a href="#create-a-subnet">Create a subnet</a></li>
+<li><a href="#create-a-public-ip-address-for-the-load-balancer-front-end">Create a public ip address for the load balancer (front-end)</a></li>
+<li><a href="#create-a-load-balancer">Create a load balancer</a></li>
+<li><a href="#create-a-load-balancer-probe-on-port-80">Create a load balancer probe on port 80</a></li>
+<li><a href="#create-a-load-balancer-traffic-rule-for-port-80">Create a load balancer traffic rule for port 80</a></li>
+<li><a href="#create-three-nat-rules-for-port-22-so-we-can-ssh-to-each-of-the-three-nodes-via-the-load-balancer-s-public-ip-address">Create three NAT rules for port 22 (so we can ssh to each of the three nodes via the load balancer&rsquo;s public ip address)</a></li>
+<li><a href="#allow-port-22-ssh-traffic-into-the-network">Allow port 22 (ssh) traffic into the network</a></li>
+<li><a href="#allow-port-80-http-traffic-into-the-network">Allow port 80 (http) traffic into the network</a></li>
+<li><a href="#create-three-virtual-network-cards">Create three virtual network cards</a></li>
+<li><a href="#create-an-availability-set-with-3-fault-domains-and-3-update-domains">Create an availability set with 3 fault domains and 3 update domains</a></li>
+<li><a href="#generate-ssh-keys">Generate ssh keys</a></li>
+<li><a href="#create-three-virtual-machines">Create three virtual machines</a></li>
+<li><a href="#install-docker-on-all-three-nodes">Install docker on all three nodes</a>
+<ul>
+<li><a href="#ssh-to-the-specific-node">SSH to the specific node</a></li>
+<li><a href="#setup-the-docker-apt-repository">Setup the docker apt repository</a></li>
+<li><a href="#install-docker-ce">Install Docker CE</a></li>
+<li><a href="#verify-that-docker-is-working-correctly">Verify that docker is working correctly</a></li>
+<li><a href="#manage-docker-as-a-non-root-user">Manage docker as a non-root user</a></li>
+<li><a href="#configure-docker-to-start-on-boot">Configure docker to start on boot</a></li>
+</ul></li>
+<li><a href="#initialize-the-docker-swarm">Initialize the docker swarm</a></li>
+<li><a href="#add-the-worker-nodes-to-the-cluster">Add the worker nodes to the cluster</a></li>
+<li><a href="#verify-the-swarm-cluster-is-up">Verify the swarm cluster is up</a></li>
+<li><a href="#cleaning-up">Cleaning up</a></li>
+<li><a href="#saving-time">Saving time</a>
+<ul>
+<li><a href="#create-the-entire-three-node-swarm-cluster-on-azure">Create the entire three node swarm cluster on Azure</a></li>
+<li><a href="#install-docker">Install Docker</a></li>
+<li><a href="#initialize-swarm-mode">Initialize swarm mode</a></li>
+</ul></li>
+</ul></li>
+</ul>
+</nav>
+  </div>
+</div>
+
+    
+    <div class="post-content">
+      
+
+<p><strong>[Updated] <sup>12</sup>&frasl;<sub>28</sub> - Improved the setup so that we can use a load balancer in front of the swarm nodes as well as improve the availability of the swarm nodes</strong></p>
+
+<h1 id="overview">Overview</h1>
+
+<p>I&rsquo;m learning docker swarm mode and need a realistic simulation of setting up a multi-node cluster. Azure is an ideal platform to test things out. My goal is to create a docker swarm cluster within a <strong>single</strong> region. Creating a multi-region swarm cluster requires creating virutal networks in different regions and connecting those vnets through a vpn gateway which is not something I&rsquo;m ready to tackle just yet.</p>
+
+<h2 id="my-setup">My setup</h2>
+
+<p>I&rsquo;m running a windows 10 workstation with docker for windows.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-powershell" data-lang="powershell"><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-powershell" data-lang="powershell"><span class="n">λ</span> <span class="n">ver</span>
+<span class="n">Microsoft</span> <span class="n">Windows</span> <span class="no">[Version 10.0.16299.125]</span>
+
+<span class="n">λ</span> <span class="n">docker</span> <span class="p">-</span><span class="n">-version</span>
+<span class="n">Docker</span> <span class="n">version</span> <span class="n">17</span><span class="p">.</span><span class="n">09</span><span class="p">.</span><span class="n">1-ce</span><span class="p">,</span> <span class="n">build</span> <span class="n">19e2cf6</span></code></pre></td></tr></table>
+</div>
+</div>
+<h2 id="getting-the-azure-cli-v2">Getting the azure cli v2</h2>
+
+<p>I know I want to use the Azure CLI v2 in order to be able to manage my azure resources from the command line but I don&rsquo;t want to have to install/configure it along with whatever programming languages it requires. Instead I just want to use it from a docker image. In order to do that, I need to download and run it in a container so from my <strong>powershell</strong> terminal I run</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-powershell" data-lang="powershell"><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-powershell" data-lang="powershell"><span class="n">docker</span> <span class="n">run</span> <span class="p">-</span><span class="n">-rm</span> <span class="n">-v</span> <span class="p">${</span><span class="n">HOME</span><span class="p">}</span><span class="err">:</span><span class="p">/</span><span class="n">root</span> <span class="n">-it</span> <span class="n">azuresdk</span><span class="p">/</span><span class="n">azure-cli-python</span><span class="err">:</span><span class="n">latest</span></code></pre></td></tr></table>
+</div>
+</div>
+<p>This will run a container that has the azure cli ready to go. The <code>--rm</code> argument means that the container will be removed once I exit from it. The <code>-v ${HOME}:/root</code> argument maps my home directory on my Windows 10 host to the /root folder inside the docker container. This means anything written to the /root folder in the container will be saved on my host machine and be available the next time I run the container. Finally the <code>-it</code> argument will put me at the terminal of the container where I can interact with it.</p>
+
+<h2 id="logging-into-my-azure-account">Logging into my azure account</h2>
+
+<p>Now that I have access to the Azure CLI, I need to authenticate to my Azure account. To do that I run</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-powershell" data-lang="powershell"><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-powershell" data-lang="powershell"><span class="n">az</span> <span class="n">login</span></code></pre></td></tr></table>
+</div>
+</div>
+<p>When you run this command it will give you a url along with a code. Simply open the url in your web browser and paste in the code and it will authorize your Azure CLI to access your Azure account.</p>
+
+<h2 id="the-script">The script</h2>
+
+<p>I&rsquo;m going to show the entire script here that you can run from the azure cli for convenience. In the rest of this post I&rsquo;ll describe what each command does.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="nv">RESOURCE_GROUP</span><span class="o">=</span><span class="s2">&#34;dev-docker-swarm-us-east&#34;</span>
+<span class="nv">VNET_NAME</span><span class="o">=</span><span class="s2">&#34;vnet-docker-swarm&#34;</span>
+<span class="nv">SUBNET_NAME</span><span class="o">=</span><span class="s2">&#34;subnet-docker-swarm&#34;</span>
+<span class="nv">NSG_NAME</span><span class="o">=</span><span class="s2">&#34;nsg-docker-swarm&#34;</span>
+<span class="nv">LOAD_BALANCER_NAME</span><span class="o">=</span><span class="s2">&#34;load-balancer-swarm-cluster&#34;</span>
+<span class="nv">OS_IMAGE</span><span class="o">=</span><span class="s2">&#34;Canonical:UbuntuServer:17.04:17.04.201711210&#34;</span>
+<span class="nv">VM_SIZE</span><span class="o">=</span><span class="s2">&#34;Standard_B2S&#34;</span>
+<span class="nv">ADMIN_USERNAME</span><span class="o">=</span><span class="s2">&#34;wshaddix&#34;</span>
+<span class="nv">AVAILABILITY_SET_NAME</span><span class="o">=</span><span class="s2">&#34;availability-set-swarm-nodes&#34;</span>
+
+<span class="c1"># create a resource group
+</span><span class="c1"></span>az group create -l eastus -n <span class="nv">$RESOURCE_GROUP</span>
+
+<span class="c1"># create a network security group
+</span><span class="c1"></span>az network nsg create -g <span class="nv">$RESOURCE_GROUP</span> -n <span class="nv">$NSG_NAME</span>
+
+<span class="c1"># create a virtual network
+</span><span class="c1"></span>az network vnet create -g <span class="nv">$RESOURCE_GROUP</span> -n <span class="nv">$VNET_NAME</span>
+
+<span class="c1"># create a subnet
+</span><span class="c1"></span>az network vnet subnet create -g <span class="nv">$RESOURCE_GROUP</span> -n <span class="nv">$SUBNET_NAME</span> --vnet-name <span class="nv">$VNET_NAME</span> --address-prefix <span class="m">10</span>.0.0.0/24 --network-security-group <span class="nv">$NSG_NAME</span>
+
+<span class="c1"># create a public ip address for the load balancer (front-end)
+</span><span class="c1"></span>az network public-ip create -g <span class="nv">$RESOURCE_GROUP</span> -n <span class="nv">$LOAD_BALANCER_NAME</span>-ip --allocation-method Static
+
+<span class="c1"># create a load balancer
+</span><span class="c1"></span>az network lb create -g <span class="nv">$RESOURCE_GROUP</span> -n <span class="nv">$LOAD_BALANCER_NAME</span> --public-ip-address <span class="nv">$LOAD_BALANCER_NAME</span>-ip --frontend-ip-name <span class="nv">$LOAD_BALANCER_NAME</span>-front-end --backend-pool-name <span class="nv">$LOAD_BALANCER_NAME</span>-back-end
+
+<span class="c1"># create a load balancer probe on port 80
+</span><span class="c1"></span>az network lb probe create -g <span class="nv">$RESOURCE_GROUP</span> -n load-balancer-health-probe-80 --lb-name <span class="nv">$LOAD_BALANCER_NAME</span> --protocol tcp --port <span class="m">80</span>
+
+<span class="c1"># create a load balancer traffic rule for port 80
+</span><span class="c1"></span>az network lb rule create -g <span class="nv">$RESOURCE_GROUP</span> -n load-balancer-traffic-rule-80 --lb-name <span class="nv">$LOAD_BALANCER_NAME</span> --protocol tcp --frontend-port <span class="m">80</span> --backend-port <span class="m">80</span> --frontend-ip-name <span class="nv">$LOAD_BALANCER_NAME</span>-front-end  --backend-pool-name <span class="nv">$LOAD_BALANCER_NAME</span>-back-end --probe-name load-balancer-health-probe-80
+
+<span class="c1"># create three NAT rules for port 22 (so we can ssh to each of the three nodes via the load balancer&#39;s public ip address)
+</span><span class="c1"></span><span class="k">for</span> i in <span class="sb">`</span>seq <span class="m">1</span> <span class="m">3</span><span class="sb">`</span><span class="p">;</span> <span class="k">do</span>
+  az network lb inbound-nat-rule create -g <span class="nv">$RESOURCE_GROUP</span> -n nat-rule-for-node-<span class="nv">$i</span>-ssh --lb-name <span class="nv">$LOAD_BALANCER_NAME</span> --protocol tcp --frontend-port <span class="m">422</span><span class="nv">$i</span> --backend-port <span class="m">22</span> --frontend-ip-name <span class="nv">$LOAD_BALANCER_NAME</span>-front-end
+<span class="k">done</span>
+
+<span class="c1"># allow port 22 (ssh) traffic into the network
+</span><span class="c1"></span>az network nsg rule create -g <span class="nv">$RESOURCE_GROUP</span> -n allow-ssh --nsg-name <span class="nv">$NSG_NAME</span> --destination-port-ranges <span class="m">22</span> --access Allow --description <span class="s2">&#34;Allow inbound ssh traffic&#34;</span> --priority <span class="m">100</span>
+
+<span class="c1"># allow port 80 (http) traffic into the network
+</span><span class="c1"></span>az network nsg rule create -g <span class="nv">$RESOURCE_GROUP</span> -n allow-http --nsg-name <span class="nv">$NSG_NAME</span> --destination-port-ranges <span class="m">80</span> --access Allow --description <span class="s2">&#34;Allow inbound http traffic&#34;</span> --priority <span class="m">200</span>
+
+<span class="c1"># create three virtual network cards and associate with the network security group and load balancer. bind each NIC to one of the ssh nat rules we created
+</span><span class="c1"></span><span class="k">for</span> i in <span class="sb">`</span>seq <span class="m">1</span> <span class="m">3</span><span class="sb">`</span><span class="p">;</span> <span class="k">do</span>
+  az network nic create -g <span class="nv">$RESOURCE_GROUP</span> -n node-<span class="nv">$i</span>-private-nic --vnet-name <span class="nv">$VNET_NAME</span> --subnet <span class="nv">$SUBNET_NAME</span> --lb-name <span class="nv">$LOAD_BALANCER_NAME</span> --lb-address-pools <span class="nv">$LOAD_BALANCER_NAME</span>-back-end --lb-inbound-nat-rules nat-rule-for-node-<span class="nv">$i</span>-ssh
+<span class="k">done</span>
+
+<span class="c1"># create an availability set with 3 fault domains and 3 update domains
+</span><span class="c1"></span>az vm availability-set create -g <span class="nv">$RESOURCE_GROUP</span> -n <span class="nv">$AVAILABILITY_SET_NAME</span> --platform-fault-domain-count <span class="m">3</span> --platform-update-domain-count <span class="m">3</span>
+
+<span class="c1"># generate ssh keys
+</span><span class="c1"></span>ssh-keygen -t rsa -f ~/.ssh/docker_rsa -N <span class="s2">&#34;&#34;</span>
+
+<span class="c1"># create three virtual machines
+</span><span class="c1"></span><span class="k">for</span> i in <span class="sb">`</span>seq <span class="m">1</span> <span class="m">3</span><span class="sb">`</span><span class="p">;</span> <span class="k">do</span>
+  az vm create -g <span class="nv">$RESOURCE_GROUP</span> -n node-<span class="nv">$i</span> --ssh-key-value <span class="s2">&#34;~/.ssh/docker_rsa.pub&#34;</span> --nics node-<span class="nv">$i</span>-private-nic --image <span class="nv">$OS_IMAGE</span> --size <span class="nv">$VM_SIZE</span> --authentication-type ssh --admin-username <span class="nv">$ADMIN_USERNAME</span> --availability-set <span class="nv">$AVAILABILITY_SET_NAME</span> --os-disk-name node-<span class="nv">$i</span>-os-disk
+<span class="k">done</span></code></pre></td></tr></table>
+</div>
+</div>
+<h2 id="create-a-resource-group">Create a resource group</h2>
+
+<p>In order to be able to easily organize and later remove any and all resources that are related to the docker swarm cluster I put everything in a resource group. Resource groups are bound to geographic locations so I created one that is close to my location. The location could be <a href="https://azure.microsoft.com/en-us/regions/">anywhere that Azure supports</a>.</p>
+
+<h2 id="create-a-network-security-group">Create a network security group</h2>
+
+<p>We want to protect our network traffic with a firewall so we create a new network security group next. We need the network security group to exist before we create our virtual network and subnet so that we can associate the subnet to the network security group. That way, any rules that we create in the firewall will apply to everything connected to the subnet. This way we don&rsquo;t have to manage rules for each individual NIC that gets attached to the subnet but instead we can manage the subnet as a whole.</p>
+
+<h2 id="create-a-virtual-network">Create a virtual network</h2>
+
+<p>We start off by creating a network that each of the swarm nodes will connect to. We also create a subnet within the network to isolate traffic between the nodes.</p>
+
+<h2 id="create-a-subnet">Create a subnet</h2>
+
+<p>We create a subnet within the virtual network and associate it to the network security group that we created previously. Any rules that we create later on for the firewall will apply to everything in this subnet.</p>
+
+<h2 id="create-a-public-ip-address-for-the-load-balancer-front-end">Create a public ip address for the load balancer (front-end)</h2>
+
+<p>Now that we have a network setup we&rsquo;ll start creating a load balancer that will balance traffic between each node in the swarm cluster. There will only be one public ip to the swarm cluster and that will be the ip address of the load balancer.</p>
+
+<h2 id="create-a-load-balancer">Create a load balancer</h2>
+
+<p>Next we create a load balancer and associate it with the public ip address that we just created. The load balancer has a front-end ip and a back-end ip address pool that it balances traffic between.</p>
+
+<h2 id="create-a-load-balancer-probe-on-port-80">Create a load balancer probe on port 80</h2>
+
+<p>The load balancer has to have a way to detect if the nodes are healthy that it sends traffic to. We create a probe that will connect with each node using tcp port 80 traffic. If the node responds then the load balancer knows that the node is ready to receive traffic.</p>
+
+<h2 id="create-a-load-balancer-traffic-rule-for-port-80">Create a load balancer traffic rule for port 80</h2>
+
+<p>With the health probe in place, next we setup a traffic rule in the load balancer to forward tcp port 80 traffic to the nodes that are in the back-end pool. We associate this traffic rule with the health probe that we created.</p>
+
+<h2 id="create-three-nat-rules-for-port-22-so-we-can-ssh-to-each-of-the-three-nodes-via-the-load-balancer-s-public-ip-address">Create three NAT rules for port 22 (so we can ssh to each of the three nodes via the load balancer&rsquo;s public ip address)</h2>
+
+<p>To finish out the load balancer setup we need to create NAT rules that will allow us to reach each individual node in the cluster when we need to manage it via ssh. In order to do this, we setup rules that will route tcp port 4221, 4222 and 4223 traffic to port 22 (the ssh port) in the back-end pool. The key thing is that we name each NAT rule with a unique name that we will later use to bind to the NICs of the swarm nodes. This is what will allow us to ssh to port 4221, 4222 and 4223 and connect to node 1, node 2 and node 3 behind the load balancer.</p>
+
+<h2 id="allow-port-22-ssh-traffic-into-the-network">Allow port 22 (ssh) traffic into the network</h2>
+
+<p>In order to get tcp port 22 traffic into the network we have to allow for it in the firewall (network security group or NSG).</p>
+
+<h2 id="allow-port-80-http-traffic-into-the-network">Allow port 80 (http) traffic into the network</h2>
+
+<p>Just like port 22 ssh traffic above, we also have to let tcp port 80 traffic into the network.</p>
+
+<h2 id="create-three-virtual-network-cards">Create three virtual network cards</h2>
+
+<p>In order to connect the swarm nodes together we have to create a NIC for them and associate the NICs with the subnet that we previously setup. We give each NIC a unique name, we place it into the load balancer&rsquo;s back-end pool and we also associate the NIC with the uniquely named inbound NAT rule that we setup in order to allow us to reach the node via the load balancer for ssh traffic.</p>
+
+<h2 id="create-an-availability-set-with-3-fault-domains-and-3-update-domains">Create an availability set with 3 fault domains and 3 update domains</h2>
+
+<p>The virtual machines that we setup as swarm nodes must all be in the same availability set in order for the load balancer to be able to route traffic to them. You can read more about availability sets <a href="https://docs.microsoft.com/en-us/azure/virtual-machines/linux/manage-availability?toc=%2fazure%2fvirtual-machines%2flinux%2ftoc.json">here</a> but in essence, what an availability set does is gives you a way to ensure that not all of your vm nodes will be rebooted at the same time (update domains) and provisions them across different physical hardware (fault domains) in order to increase their availability and up-time. In a future post I&rsquo;d like to explore using the new preview feature of <a href="https://docs.microsoft.com/en-us/azure/availability-zones/az-overview">Availability Zones</a> to further improve the fault tolerance of the swarm cluster.</p>
+
+<h2 id="generate-ssh-keys">Generate ssh keys</h2>
+
+<p>In order to manage the virtual machines we generate an ssh keypair so that each vm can be managed by the same ssh key for ease of administration.</p>
+
+<h2 id="create-three-virtual-machines">Create three virtual machines</h2>
+
+<p>Finally we can provision the virtual machines. For each VM we give it a unique name that aligns with the name of it&rsquo;s NIC and OS disk. We place it in the availability set that we created and associate it with the public key of the ssh key pair that we generated previously.</p>
+
+<h2 id="install-docker-on-all-three-nodes">Install docker on all three nodes</h2>
+
+<p><strong>On all three nodes</strong> you have to install docker. Repeat these commands on each node via an ssh session.</p>
+
+<h3 id="ssh-to-the-specific-node">SSH to the specific node</h3>
+
+<p>In order to reach each individual node via the load balancer you have to ssh to the correct port based on how we setup the NAT rules earlier.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-powershell" data-lang="powershell"><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-powershell" data-lang="powershell"><span class="c"># node 1</span>
+<span class="n">ssh</span> <span class="n">-i</span> <span class="p">~/.</span><span class="n">ssh</span><span class="p">/</span><span class="n">docker_rsa</span> <span class="n">wshaddix</span><span class="p">@&lt;</span><span class="n">load</span> <span class="n">balancer</span> <span class="n">ip</span> <span class="n">address</span><span class="p">&gt;</span> <span class="n">-p</span> <span class="n">4221</span>
+
+<span class="c"># node 2</span>
+<span class="n">ssh</span> <span class="n">-i</span> <span class="p">~/.</span><span class="n">ssh</span><span class="p">/</span><span class="n">docker_rsa</span> <span class="n">wshaddix</span><span class="p">@&lt;</span><span class="n">load</span> <span class="n">balancer</span> <span class="n">ip</span> <span class="n">address</span><span class="p">&gt;</span> <span class="n">-p</span> <span class="n">4222</span>
+
+<span class="c"># node 3</span>
+<span class="n">ssh</span> <span class="n">-i</span> <span class="p">~/.</span><span class="n">ssh</span><span class="p">/</span><span class="n">docker_rsa</span> <span class="n">wshaddix</span><span class="p">@&lt;</span><span class="n">load</span> <span class="n">balancer</span> <span class="n">ip</span> <span class="n">address</span><span class="p">&gt;</span> <span class="n">-p</span> <span class="n">4223</span></code></pre></td></tr></table>
+</div>
+</div>
+<h3 id="setup-the-docker-apt-repository">Setup the docker apt repository</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-powershell" data-lang="powershell"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-powershell" data-lang="powershell"><span class="n">sudo</span> <span class="n">apt-get</span> <span class="n">update</span>
+
+<span class="n">sudo</span> <span class="n">apt-get</span> <span class="n">install</span> <span class="p">\</span>
+    <span class="n">apt-transport-https</span> <span class="p">\</span>
+    <span class="n">ca-certificates</span> <span class="p">\</span>
+    <span class="n">curl</span> <span class="p">\</span>
+    <span class="n">software-properties-common</span>
+
+<span class="n">curl</span> <span class="n">-fsSL</span> <span class="n">https</span><span class="err">:</span><span class="p">//</span><span class="n">download</span><span class="p">.</span><span class="n">docker</span><span class="p">.</span><span class="n">com</span><span class="p">/</span><span class="n">linux</span><span class="p">/</span><span class="n">ubuntu</span><span class="p">/</span><span class="n">gpg</span> <span class="p">|</span> <span class="n">sudo</span> <span class="n">apt-key</span> <span class="n">add</span> <span class="p">-</span>
+
+<span class="n">sudo</span> <span class="nb">add-apt</span><span class="n">-repository</span> <span class="p">\</span>
+   <span class="s2">&#34;deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+</span><span class="s2">   </span><span class="p">$(</span><span class="n">lsb_release</span> <span class="n">-cs</span><span class="p">)</span><span class="s2"> \
+</span><span class="s2">   stable&#34;</span></code></pre></td></tr></table>
+</div>
+</div>
+<h3 id="install-docker-ce">Install Docker CE</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-powershell" data-lang="powershell"><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-powershell" data-lang="powershell"><span class="n">sudo</span> <span class="n">apt-get</span> <span class="n">update</span>
+
+<span class="n">sudo</span> <span class="n">apt-get</span> <span class="n">install</span> <span class="n">docker-ce</span><span class="p">=</span><span class="n">17</span><span class="p">.</span><span class="n">09</span><span class="p">.</span><span class="n">1</span><span class="p">~</span><span class="n">ce</span><span class="p">-</span><span class="n">0</span><span class="p">~</span><span class="n">ubuntu</span></code></pre></td></tr></table>
+</div>
+</div>
+<h3 id="verify-that-docker-is-working-correctly">Verify that docker is working correctly</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-powershell" data-lang="powershell"><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-powershell" data-lang="powershell"><span class="n">sudo</span> <span class="n">docker</span> <span class="n">run</span> <span class="n">hello-world</span></code></pre></td></tr></table>
+</div>
+</div>
+<h3 id="manage-docker-as-a-non-root-user">Manage docker as a non-root user</h3>
+
+<p>Right now anytime you interact with the docker cli you have to prefix the <code>docker</code> command with <code>sudo</code>. If you want
+ to allow your user to run the docker cli as non-root you can create a docker group and add your user to it. Note that you&rsquo;ll have to log out and back in for this change to take effect.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-powershell" data-lang="powershell"><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-powershell" data-lang="powershell"><span class="n">sudo</span> <span class="n">usermod</span> <span class="n">-aG</span> <span class="n">docker</span> <span class="nv">$USER</span></code></pre></td></tr></table>
+</div>
+</div>
+<h3 id="configure-docker-to-start-on-boot">Configure docker to start on boot</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-powershell" data-lang="powershell"><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-powershell" data-lang="powershell"><span class="n">sudo</span> <span class="n">systemctl</span> <span class="n">enable</span> <span class="n">docker</span></code></pre></td></tr></table>
+</div>
+</div>
+<h2 id="initialize-the-docker-swarm">Initialize the docker swarm</h2>
+
+<p>Make sure you run the following command on the <strong>swarm manager node</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-powershell" data-lang="powershell"><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-powershell" data-lang="powershell"><span class="n">docker</span> <span class="n">swarm</span> <span class="n">init</span> <span class="p">-</span><span class="n">-advertise-addr</span> <span class="n">10</span><span class="p">.</span><span class="n">0</span><span class="p">.</span><span class="n">0</span><span class="p">.</span><span class="n">4</span></code></pre></td></tr></table>
+</div>
+</div>
+<p>The output of the above command will tell you what you need to run on the worker1 and worker2 nodes to join to the cluster.</p>
+
+<h2 id="add-the-worker-nodes-to-the-cluster">Add the worker nodes to the cluster</h2>
+
+<p>On the worker nodes run the command (my example is below) indicated when you initialized the swarm cluster from the previous step.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-powershell" data-lang="powershell"><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-powershell" data-lang="powershell"><span class="n">docker</span> <span class="n">swarm</span> <span class="n">join</span> <span class="p">-</span><span class="n">-token</span> <span class="p">&lt;</span><span class="n">your</span> <span class="n">swarm</span> <span class="n">cluster</span><span class="err">&#39;</span><span class="n">s</span> <span class="n">join</span> <span class="n">token</span><span class="p">&gt;</span> <span class="n">10</span><span class="p">.</span><span class="n">0</span><span class="p">.</span><span class="n">0</span><span class="p">.</span><span class="n">4</span><span class="err">:</span><span class="n">2377</span></code></pre></td></tr></table>
+</div>
+</div>
+<h2 id="verify-the-swarm-cluster-is-up">Verify the swarm cluster is up</h2>
+
+<p>On the manager node run the following command to ensure that the swarm is running with three nodes.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-powershell" data-lang="powershell"><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-powershell" data-lang="powershell"><span class="n">docker</span> <span class="n">node</span> <span class="n">ls</span></code></pre></td></tr></table>
+</div>
+</div>
+<h2 id="cleaning-up">Cleaning up</h2>
+
+<p>After you are done and ready to deprovision all of the resources that we&rsquo;ve created so that you are not billed for them, you can simply delete the resource group.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-powershell" data-lang="powershell"><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-powershell" data-lang="powershell"><span class="n">az</span> <span class="n">group</span> <span class="n">delete</span> <span class="n">-n</span> <span class="n">dev-docker-swarm-us-east</span></code></pre></td></tr></table>
+</div>
+</div>
+<p>You also may want to delete your docker_rsa ssh keypair if you are going to re-run these steps in the future.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-powershell" data-lang="powershell"><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-powershell" data-lang="powershell"><span class="n">rm</span> <span class="p">~/.</span><span class="n">ssh</span><span class="p">/</span><span class="n">docker_rsa</span><span class="p">*</span></code></pre></td></tr></table>
+</div>
+</div>
+<p>You may (or may not) also want to remove the three nodes from your <code>~/.ssh/known_hosts</code> file</p>
+
+<h2 id="saving-time">Saving time</h2>
+
+<p>If you are creating and removing swarm clusters frequently it is faster to run all of the commands at once as opposed to copy/paste/running each one. I&rsquo;ve setup gists to speed up the process.</p>
+
+<h3 id="create-the-entire-three-node-swarm-cluster-on-azure">Create the entire three node swarm cluster on Azure</h3>
+
+<p>After you&rsquo;ve logged into your Azure account you can run</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-powershell" data-lang="powershell"><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-powershell" data-lang="powershell"><span class="n">wget</span> <span class="n">-O</span> <span class="p">-</span> <span class="n">https</span><span class="err">:</span><span class="p">//</span><span class="n">gist</span><span class="p">.</span><span class="n">githubusercontent</span><span class="p">.</span><span class="n">com</span><span class="p">/</span><span class="n">wshaddix</span><span class="p">/</span><span class="n">3acf084908f31d7c18f1f20f53b19147</span><span class="p">/</span><span class="n">raw</span><span class="p">/</span><span class="n">bf4ea5aa97a92020be50cd1c0cc2f7c7a6b65fbc</span><span class="p">/</span><span class="n">Setting</span><span class="k">%</span><span class="n">2520up</span><span class="k">%</span><span class="n">2520docker</span><span class="k">%</span><span class="n">2520swarm</span><span class="k">%</span><span class="n">2520on</span><span class="k">%</span><span class="n">2520azure</span> <span class="p">|</span> <span class="n">bash</span></code></pre></td></tr></table>
+</div>
+</div>
+<p>This will setup the three virtual machines.</p>
+
+<h3 id="install-docker">Install Docker</h3>
+
+<p>Next, you can ssh into each of the three nodes and run</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-powershell" data-lang="powershell"><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-powershell" data-lang="powershell"><span class="n">wget</span> <span class="n">-O</span> <span class="p">-</span> <span class="n">https</span><span class="err">:</span><span class="p">//</span><span class="n">gist</span><span class="p">.</span><span class="n">githubusercontent</span><span class="p">.</span><span class="n">com</span><span class="p">/</span><span class="n">wshaddix</span><span class="p">/</span><span class="n">91058d471c525050f005e98eda85e3d3</span><span class="p">/</span><span class="n">raw</span><span class="p">/</span><span class="n">46de5d48bd4c4e51a9701e743c85fbf4dc3a3ce4</span><span class="p">/</span><span class="n">Install</span><span class="k">%</span><span class="n">2520Docker</span><span class="k">%</span><span class="n">2520on</span><span class="k">%</span><span class="n">2520Ubuntu</span><span class="k">%</span><span class="n">252017</span><span class="p">.</span><span class="n">04</span> <span class="p">|</span> <span class="n">bash</span></code></pre></td></tr></table>
+</div>
+</div>
+<h3 id="initialize-swarm-mode">Initialize swarm mode</h3>
+
+<p>Now you&rsquo;ve got your virtual machines provisioned and docker installed you can just run the commands listed above to initialize the swarm and join the worker nodes.</p>
+
+    </div>
+
+    
+    
+
+    
+    
+
+    <footer class="post-footer">
+      <div class="post-tags">
+          
+          <a href="/tags/docker/">docker</a>
+          
+          <a href="/tags/docker-swarm/">docker-swarm</a>
+          
+        </div>
+
+      
+      <nav class="post-nav">
+        
+          <a class="prev" href="/post/visualizing-a-docker-swarm-cluster/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">Visualizing a Docker Swarm Cluster</span>
+            <span class="prev-text nav-mobile">Prev</span>
+          </a>
+        
+          <a class="next" href="/post/logging-and-monitoring-on-a-docker-swarm-cluster/">
+            <span class="next-text nav-default">Logging and Monitoring on a Docker Swarm Cluster</span>
+            <span class="prev-text nav-mobile">Next</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+    
+
+  <div class="disqus-button" id="load_disqus" onclick="load_disqus()">
+      Show Disqus Comments
+    </div>
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+    function load_disqus() {
+        
+        
+        if (window.location.hostname === 'localhost') return;
+
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        var disqus_shortname = 'wesshaddix';
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+
+        $('#load_disqus').remove();
+    };
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    
+
+  
+
+  
+  </article>
+        </div>
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:wes.shaddix@outlook.com" rel="me noopener" class="iconfont icon-email"
+        title="email" target="_blank">
+      </a>
+      <a href="https://twitter.com/wshaddix" rel="me noopener" class="iconfont icon-twitter"
+        title="twitter" target="_blank">
+      </a>
+      <a href="https://github.com/wshaddix" rel="me noopener" class="iconfont icon-github"
+        title="github" target="_blank">
+      </a>
+  <a href="http://www.wesshaddix.com/index.xml" rel="noopener" type="application/rss+xml" class="iconfont icon-rss"
+    title="rss" target="_blank">
+  </a>
+</div>
+
+<div class="copyright">
+  <span class="copyright-year">
+    &copy;
+    2018
+    <span class="heart">
+      <i class="iconfont icon-heart"></i>
+    </span><span class="author">Wes Shaddix</span></span>
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+<script type="text/javascript" src="/lib/jquery/jquery-3.2.1.min.js"></script>
+  <script type="text/javascript" src="/lib/slideout/slideout-1.0.1.min.js"></script>
+<script type="text/javascript" src="/dist/jane.min.js?v=2.7.0"></script>
+
+
+
+
+
+  
+    <script type="text/javascript" src="/js/load-photoswipe.js"></script>
+    <script type="text/javascript" src="/lib/photoswipe/photoswipe.min.js"></script>
+    <script type="text/javascript" src="/lib/photoswipe/photoswipe-ui-default.min.js"></script>
+  
+
+
+
+
+
+</body>
+</html>
