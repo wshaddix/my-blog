@@ -85,7 +85,7 @@
 
 <meta itemprop="datePublished" content="2018-05-21T09:53:37-04:00" />
 <meta itemprop="dateModified" content="2018-05-21T09:53:37-04:00" />
-<meta itemprop="wordCount" content="404">
+<meta itemprop="wordCount" content="326">
 
 
 
@@ -297,7 +297,7 @@ ga('send', 'pageview');
       <div class="post-meta">
         <span class="post-time"> 2018-05-21 </span>
         
-        <span class="more-meta"> 404 words </span>
+        <span class="more-meta"> 326 words </span>
         <span class="more-meta"> 2 min read </span>
       </div>
     </header>
@@ -311,11 +311,10 @@ ga('send', 'pageview');
 <ul>
 <li><a href="#scenario">Scenario</a>
 <ul>
-<li><a href="#step-1-evaluate-manager-status">Step 1: Evaluate Manager Status</a></li>
-<li><a href="#step-2-drain-the-node">Step 2: Drain the Node</a></li>
-<li><a href="#step-3-perform-the-os-upgrade">Step 3: Perform the OS upgrade</a></li>
-<li><a href="#step-4-add-the-new-docker-repository">Step 4: Add the new Docker Repository</a></li>
-<li><a href="#step-5-activate-the-node">Step 5: Activate the Node</a></li>
+<li><a href="#step-1-drain-the-node">Step 1: Drain the Node</a></li>
+<li><a href="#step-2-perform-the-os-upgrade">Step 2: Perform the OS upgrade</a></li>
+<li><a href="#step-3-add-the-new-docker-repository">Step 3: Add the new Docker Repository</a></li>
+<li><a href="#step-4-activate-the-node">Step 4: Activate the Node</a></li>
 </ul></li>
 </ul>
 </nav>
@@ -331,15 +330,7 @@ ga('send', 'pageview');
 
 <p>From time to time you&rsquo;ll need to update the OS of the docker swarm nodes. In my case I&rsquo;m upgrading from Ubuntu 17.10 to Ubuntu 18.04. You have to be cautious of two things when your host is in a docker swarm node. First you have to drain the node that is being updated so that no services are running on the node (and thus disappear) and second you have to make sure you never lose quorum on the swarm cluster by removing a manager node. <strong>To maintain quorum, a majority of managers must be available.</strong></p>
 
-<h2 id="step-1-evaluate-manager-status">Step 1: Evaluate Manager Status</h2>
-
-<p>The first step is to evaluate the manager status of the node. If the node is not a manager then you don&rsquo;t have to worry about losing the quorum when you take the node offline. If the node is a manager, then you need to promote another node in order to take over for the node that you&rsquo;re about to update.</p>
-
-<p><code>docker node promote &lt;worker node name&gt;</code></p>
-
-<p><code>docker node demote &lt;manager node name&gt;</code></p>
-
-<h2 id="step-2-drain-the-node">Step 2: Drain the Node</h2>
+<h2 id="step-1-drain-the-node">Step 1: Drain the Node</h2>
 
 <p>The next step is to drain the node so that the services currently running on that node are moved to other nodes in the swarm.</p>
 
@@ -355,7 +346,7 @@ ga('send', 'pageview');
 
 <p><code>docker container ps</code></p>
 
-<h2 id="step-3-perform-the-os-upgrade">Step 3: Perform the OS upgrade</h2>
+<h2 id="step-2-perform-the-os-upgrade">Step 2: Perform the OS upgrade</h2>
 
 <p>From the drained node perform the OS upgrade by running</p>
 
@@ -363,7 +354,7 @@ ga('send', 'pageview');
 
 <p>Follow the prompts and answer the questions. Eventually you&rsquo;ll be prompted to restart the computer.</p>
 
-<h2 id="step-4-add-the-new-docker-repository">Step 4: Add the new Docker Repository</h2>
+<h2 id="step-3-add-the-new-docker-repository">Step 3: Add the new Docker Repository</h2>
 
 <p>Now that you have a new Ubuntu version you need to update the docker repository so that you can pull in the latest updates for your new version of Ubuntu.</p>
 <div class="highlight"><div class="chroma">
@@ -384,7 +375,7 @@ ga('send', 'pageview');
 
 <p><code>sudo apt-get update</code></p>
 
-<h2 id="step-5-activate-the-node">Step 5: Activate the Node</h2>
+<h2 id="step-4-activate-the-node">Step 4: Activate the Node</h2>
 
 <p>Set the node back to active in the swarm cluster by running the following command on a manager node</p>
 
@@ -415,6 +406,11 @@ ga('send', 'pageview');
       
       <nav class="post-nav">
         
+          <a class="prev" href="/post/holding-back-package-updates-in-ubuntu/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">Holding Back Package Updates in Ubuntu</span>
+            <span class="prev-text nav-mobile">Prev</span>
+          </a>
         
           <a class="next" href="/post/docker-recipies/">
             <span class="next-text nav-default">Docker Recipies</span>

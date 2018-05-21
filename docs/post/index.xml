@@ -6,10 +6,20 @@
     <description>Recent content in Posts on Wes Shaddix | Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Mon, 21 May 2018 09:53:37 -0400</lastBuildDate>
+    <lastBuildDate>Mon, 21 May 2018 17:36:42 -0400</lastBuildDate>
     
 	<atom:link href="http://www.wesshaddix.com/post/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Holding Back Package Updates in Ubuntu</title>
+      <link>http://www.wesshaddix.com/post/holding-back-package-updates-in-ubuntu/</link>
+      <pubDate>Mon, 21 May 2018 17:36:42 -0400</pubDate>
+      
+      <guid>http://www.wesshaddix.com/post/holding-back-package-updates-in-ubuntu/</guid>
+      <description>&lt;p&gt;How to hold back packages from being updated in Ubuntu
+&lt;/p&gt;</description>
+    </item>
     
     <item>
       <title>Upgrading Ubuntu on Docker Swarm Node</title>
