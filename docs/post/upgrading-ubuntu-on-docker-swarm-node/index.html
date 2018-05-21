@@ -304,6 +304,23 @@ ga('send', 'pageview');
 
     
     
+<div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">Table of Contents</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+<ul>
+<li><a href="#scenario">Scenario</a>
+<ul>
+<li><a href="#step-1-evaluate-manager-status">Step 1: Evaluate Manager Status</a></li>
+<li><a href="#step-2-drain-the-node">Step 2: Drain the Node</a></li>
+<li><a href="#step-3-perform-the-os-upgrade">Step 3: Perform the OS upgrade</a></li>
+<li><a href="#step-4-add-the-new-docker-repository">Step 4: Add the new Docker Repository</a></li>
+<li><a href="#step-5-activate-the-node">Step 5: Activate the Node</a></li>
+</ul></li>
+</ul>
+</nav>
+  </div>
+</div>
 
     
     <div class="post-content">
@@ -407,6 +424,31 @@ ga('send', 'pageview');
       </nav>
     </footer>
     
+
+  <div class="disqus-button" id="load_disqus" onclick="load_disqus()">
+      Show Disqus Comments
+    </div>
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+    function load_disqus() {
+        
+        
+        if (window.location.hostname === 'localhost') return;
+
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        var disqus_shortname = 'wesshaddix';
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+
+        $('#load_disqus').remove();
+    };
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    
+
+  
+
+  
   </article>
         </div>
       </div>
