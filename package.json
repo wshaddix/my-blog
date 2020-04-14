@@ -1,0 +1,14 @@
+{
+    "name": "my blog",
+    "private": true,
+    "scripts": {
+      "start": "hugo server",
+      "build": "hugo && npm run build:functions",
+      "server": "hugo server"
+    },
+    "dependencies": {
+      "autoprefixer": "^9.7.6",
+      "postcss-cli": "^7.1.0"
+    }
+  }
+  
