@@ -1,9 +1,9 @@
 {
-    "name": "my blog",
+    "name": "my_blog",
     "private": true,
     "scripts": {
       "start": "hugo server",
-      "build": "hugo && npm run build:functions",
+      "build": "hugo",
       "server": "hugo server"
     },
     "dependencies": {
